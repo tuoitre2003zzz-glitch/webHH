@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vật Liệu Xây Dựng | Hoàng Hải Luxury</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+    
+</style>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo"><img src="img/logo.png" alt=""><span>HOÀNG HẢI LUXURY</span></a>
+        <div class="menu-toggle" id="mobile-menu"><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
+        <nav>
+            <ul class="nav-list">
+                <li><a href="index.html">Trang chủ</a></li>
+                <li><a href="gioi-thieu.html">Giới thiệu</a></li>
+                <li><a href="ho-so-nang-luc.html">Năng lực</a></li>
+                <li><a href="phong-thuy-xay-dung.html">Phong thủy</a></li>
+                <li><a href="https://xaydunghoangphu.com.vn/" target="_blank" rel="noopener noreferrer">Xây nhà trọn gói</a></li>
+                <li><a href="khu-vui-choi.html">Khu vui chơi</a></li>
+                <li><a href="vat-lieu.html">Vật liệu</a></li>
+                <li><a href="noi-that.html">Nội thất</a></li>
+                <li><a href="tin-tuc.html">Tin tức</a></li>
+                <li><a href="lien-he.html">Liên hệ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="page-header page-header--materials">
+        <h1>Vật Liệu Xây Dựng</h1>
+        <p>Nguyên liệu chuẩn, giá hợp lý, phục vụ thi công bền vững.</p>
+        <div class="brand-marquee" aria-label="Nhãn hàng đồng hành"><span class="brand-marquee-label"></span><div class="brand-marquee-window"><div class="brand-marquee-track"><div class="brand-marquee-set" aria-hidden="true"><span>VIGLACERA</span><span>TOTO</span><span>INAX</span><span>CAESAR</span><span>PRIME</span><span>HOÀNG PHÚ</span></div><div class="brand-marquee-set" aria-hidden="true"><span>VIGLACERA</span><span>TOTO</span><span>INAX</span><span>CAESAR</span><span>PRIME</span><span>HOÀNG PHÚ</span></div></div></div></div>
+    </div>
+
+    <section class="section">
+        <h2 class="section-title">Vật Liệu Xây Dựng </h2>
+        <div class="section-divider"></div>
+      
+        <div class="catalog-toolbar" aria-label="Bộ lọc vật liệu">
+            <div class="catalog-search">
+                <label for="material-search">Tìm nhanh</label>
+                <input id="material-search" type="search" placeholder="Tên gạch, màu sắc, công năng..." autocomplete="off">
+            </div>
+            <div class="catalog-select">
+                <label for="material-size">Khổ gạch</label>
+                <select id="material-size">
+                    <option value="all">Tất cả kích thước</option>
+                    <option value="30x30">30x30 cm</option>
+                    <option value="40x40">40x40 cm</option>
+                    <option value="50x50">50x50 cm</option>
+                    <option value="60x60">60x60 cm</option>
+                    <option value="80x80">80x80 cm</option>
+                    <option value="60x120">60x120 cm</option>
+                    <option value="80x160">80x160 cm</option>
+                    <option value="120x120">120x120 cm</option>
+                    <option value="120x240">120x240 cm</option>
+                </select>
+            </div>
+            <div class="catalog-select">
+                <label for="material-type">Dòng sản phẩm</label>
+                <select id="material-type">
+                    <option value="all">Tất cả dòng</option>
+                    <option value="ceramic">Ceramic / men</option>
+                    <option value="porcelain">Porcelain</option>
+                    <option value="marble">Marble</option>
+                    <option value="slab">Slab khổ lớn</option>
+                    <option value="outdoor">Ngoài trời / chống trơn</option>
+                </select>
+            </div>
+            <div class="catalog-select">
+                <label for="material-price">Khoảng giá</label>
+                <select id="material-price">
+                    <option value="all">Tất cả mức giá</option>
+                    <option value="budget">Dưới 400.000đ</option>
+                    <option value="standard">400.000 - 800.000đ</option>
+                    <option value="premium">Trên 800.000đ</option>
+                </select>
+            </div>
+            <div class="catalog-select catalog-sort">
+                <label for="material-sort">Sắp xếp</label>
+                <select id="material-sort">
+                    <option value="default">Mặc định</option>
+                    <option value="price-asc">Giá thấp đến cao</option>
+                    <option value="price-desc">Giá cao đến thấp</option>
+                    <option value="size-asc">Khổ nhỏ đến lớn</option>
+                </select>
+            </div>
+            <button class="catalog-apply" id="material-apply" type="button">Tìm kiếm</button>
+            <button class="catalog-reset" id="material-reset" type="button">Xóa lọc</button>
+        </div>
+        <div class="catalog-summary" id="material-summary" aria-live="polite" hidden><strong id="material-count">0</strong> sản phẩm phù hợp</div>
+        <div class="grid-container">
+            <div class="card product-card" data-tile-size="30x30">
+                <img loading="lazy" src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=85" alt="Gạch ceramic trắng 30x30 cm">
+                <div class="card-content">
+                    <div class="product-topline">
+                        <h3>Gạch Ceramic Trắng 30x30</h3>
+                        <span class="price">185.000đ / thùng</span>
+                    </div>
+                    <span class="size-tag">30x30 cm</span><p>Gạch ceramic màu trắng sáng, dễ vệ sinh, phù hợp nhà bếp, nhà tắm và khu vực phụ.</p>
+                </div>
+            </div>
+
+            <div class="card product-card" data-tile-size="30x30">
+                <img loading="lazy" src="https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=900&q=85" alt="Gạch vân đá xám 30x30 cm">
+                <div class="card-content">
+                    <div class="product-topline">
+                        <h3>Gạch Vân Đá Xám 30x30</h3>
+                        <span class="price">210.000đ / thùng</span>
+                    </div>
+                    <span class="size-tag">30x30 cm</span><p>Bề mặt nhám nhẹ, màu xám trung tính, phù hợp lối đi, ban công và khu vực cần hạn chế trơn trượt.</p>
+                </div>
+            </div>
+
+            <div class="card product-card" data-tile-size="30x30">
+                <img loading="lazy" src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=900&q=85" alt="Gạch họa tiết terrazzo 30x30 cm">
+                <div class="card-content">
+                    <div class="product-topline">
+                        <h3>Gạch Terrazzo Nhẹ 30x30</h3>
+                        <span class="price">225.000đ / thùng</span>
+                    </div>
+                    <span class="size-tag">30x30 cm</span><p>Họa tiết chấm đá nhỏ tạo điểm nhấn trẻ trung cho ban công, sân sau và các mảng ốp trang trí.</p>
+                </div>
+            </div>
+
+            <div class="card product-card" data-tile-size="40x40">
+                <img loading="lazy" src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=85" alt="Gạch men bóng trắng 40x40 cm">
+                <div class="card-content">
+                    <div class="product-topline">
+                        <h3>Gạch Men Bóng Trắng 40x40</h3>
+                        <span class="price">245.000đ / thùng</span>
+                    </div>
+                    <span class="size-tag">40x40 cm</span><p>Tông trắng sạch, bề mặt bóng dễ lau chùi, dùng tốt cho bếp, phòng tắm và nhà phố.</p>
+                </div>
+            </div>
+
+            <div class="card product-card" data-tile-size="40x40">
+                <img loading="lazy" src="https://images.unsplash.com/photo-1600573472550-8090b5e0745e?auto=format&fit=crop&w=900&q=85" alt="Gạch vân gỗ nâu 40x40 cm">
+                <div class="card-content">
+                    <div class="product-topline">
+                        <h3>Gạch Vân Gỗ Nâu 40x40</h3>
+                        <span class="price">290.000đ / thùng</span>
+                    </div>
+                    <span class="size-tag">40x40 cm</span><p>Họa tiết gỗ ấm áp, dễ kết hợp với nội thất và phù hợp phòng khách, phòng ngủ hoặc homestay.</p>
+                </div>
+            </div>
+
+            <div class="card product-card" data-tile-size="40x40">
+                <img loading="lazy" src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85" alt="Gạch đá tự nhiên 40x40 cm">
+                <div class="card-content">
+                    <div class="product-topline">
+                        <h3>Gạch Đá Tự Nhiên 40x40</h3>
+                        <span class="price">315.000đ / thùng</span>
+                    </div>
+                    <span class="size-tag">40x40 cm</span><p>Màu đá tự nhiên, bề mặt chắc chắn, phù hợp sân vườn, hành lang và khu vực ngoài trời.</p>
+                </div>
+            </div>
+
+            <div class="card product-card" data-tile-size="50x50">
+                <img loading="lazy" src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=85" alt="Gạch vân đá kem 50x50 cm">
+                <div class="card-content">
+                    <div class="product-topline">
+                        <h3>Gạch Vân Đá Kem 50x50</h3>
+                        <span class="price">345.000đ / thùng</span>
+                    </div>
+                    <span class="size-tag">50x50 cm</span><p>Nền kem thanh lịch, vân đá nhẹ, tạo cảm giác sáng và rộng cho phòng khách, sảnh và văn phòng.</p>
+                </div>
+            </div>
+
+            <div class="card product-card" data-tile-size="50x50">
+                <img loading="lazy" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=85" alt="Gạch vân xi măng 50x50 cm">
+                <div class="card-content">
+                    <div class="product-topline">
+                        <h3>Gạch Vân Xi Măng 50x50</h3>
+                        <span class="price">330.000đ / thùng</span>
+                    </div>
+                    <span class="size-tag">50x50 cm</span><p>Phong cách tối giản, bề mặt lì hiện đại, thích hợp căn hộ, studio và không gian thương mại.</p>
+                </div>
+            </div>
+
+            <div class="card product-card" data-tile-size="50x50">
+                <img loading="lazy" src="https://images.unsplash.com/photo-1615874694520-474822394e73?auto=format&fit=crop&w=900&q=85" alt="Gạch họa tiết cổ điển 50x50 cm">
+                <div class="card-content">
+                    <div class="product-topline">
+                        <h3>Gạch Họa Tiết Cổ Điển 50x50</h3>
+                        <span class="price">365.000đ / thùng</span>
+                    </div>
+                    <span class="size-tag">50x50 cm</span><p>Họa tiết nổi bật cho sảnh, quán cafe, khu nghỉ dưỡng và những không gian cần cá tính riêng.</p>
+                </div>
+            </div>
+
+            <div class="card product-card" data-tile-size="60x60"><img loading="lazy" src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=900&q=85" alt="Gạch porcelain xám 60x60 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Porcelain Xám 60x60</h3><span class="price">395.000đ / thùng</span></div><span class="size-tag">60x60 cm</span><p>Porcelain bền chắc, màu xám trung tính, phù hợp phòng khách, bếp và sảnh nhà phố.</p></div></div>
+            <div class="card product-card" data-tile-size="60x60"><img loading="lazy" src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=85" alt="Gạch marble trắng 60x60 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Marble Trắng 60x60</h3><span class="price">455.000đ / thùng</span></div><span class="size-tag">60x60 cm</span><p>Vân marble sáng sang trọng, dễ phối nội thất và tạo điểm nhấn cho phòng khách, sảnh đón.</p></div></div>
+            <div class="card product-card" data-tile-size="60x60"><img loading="lazy" src="https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=900&q=85" alt="Gạch chống trơn 60x60 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Chống Trơn 60x60</h3><span class="price">420.000đ / thùng</span></div><span class="size-tag">60x60 cm</span><p>Bề mặt nhám vừa, cân bằng an toàn và thẩm mỹ cho ban công, sân thượng, lối đi.</p></div></div>
+            <div class="card product-card" data-tile-size="80x80"><img loading="lazy" src="https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=900&q=85" alt="Gạch vân đá lớn 80x80 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Vân Đá Lớn 80x80</h3><span class="price">580.000đ / thùng</span></div><span class="size-tag">80x80 cm</span><p>Khổ lớn giúp giảm đường ron, tạo bề mặt liền mạch cho biệt thự, sảnh và showroom.</p></div></div>
+            <div class="card product-card" data-tile-size="80x80"><img loading="lazy" src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85" alt="Gạch xi măng cao cấp 80x80 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Xi Măng Cao Cấp 80x80</h3><span class="price">545.000đ / thùng</span></div><span class="size-tag">80x80 cm</span><p>Tông ghi hiện đại, phù hợp phong cách tối giản và các khu vực thương mại có diện tích lớn.</p></div></div>
+            <div class="card product-card" data-tile-size="80x80"><img loading="lazy" src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=85" alt="Gạch vân gỗ cao cấp 80x80 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Vân Gỗ Cao Cấp 80x80</h3><span class="price">620.000đ / thùng</span></div><span class="size-tag">80x80 cm</span><p>Hiệu ứng gỗ tự nhiên nhưng dễ vệ sinh, phù hợp resort, phòng ngủ và không gian tiếp khách.</p></div></div>
+            <div class="card product-card" data-tile-size="60x120"><img loading="lazy" src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=85" alt="Gạch marble vân mây 60x120 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Marble Vân Mây 60x120</h3><span class="price">690.000đ / thùng</span></div><span class="size-tag">60x120 cm</span><p>Khổ chữ nhật tạo cảm giác cao và thoáng, phù hợp mảng tường phòng khách, sảnh và phòng tắm.</p></div></div>
+            <div class="card product-card" data-tile-size="60x120"><img loading="lazy" src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=900&q=85" alt="Gạch travertine 60x120 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Travertine 60x120</h3><span class="price">735.000đ / thùng</span></div><span class="size-tag">60x120 cm</span><p>Vân đá tự nhiên mềm mắt, tạo cảm giác nghỉ dưỡng cho villa, resort và phòng tắm cao cấp.</p></div></div>
+            <div class="card product-card" data-tile-size="60x120"><img loading="lazy" src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=85" alt="Gạch đen sang trọng 60x120 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Đen Sang Trọng 60x120</h3><span class="price">780.000đ / thùng</span></div><span class="size-tag">60x120 cm</span><p>Màu đen sâu, bề mặt tinh tế, dùng làm mảng nhấn cho quầy bar, sảnh và showroom.</p></div></div>
+            <div class="card product-card" data-tile-size="80x160"><img loading="lazy" src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=85" alt="Gạch porcelain khổ lớn 80x160 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Porcelain Khổ Lớn 80x160</h3><span class="price">980.000đ / thùng</span></div><span class="size-tag">80x160 cm</span><p>Khổ lớn cho mặt sàn và mảng tường nổi bật, phù hợp công trình cao cấp cần ít đường ron.</p></div></div>
+            <div class="card product-card" data-tile-size="80x160"><img loading="lazy" src="https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=900&q=85" alt="Gạch vân đá trắng 80x160 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Vân Đá Trắng 80x160</h3><span class="price">1.080.000đ / thùng</span></div><span class="size-tag">80x160 cm</span><p>Vân trắng thanh thoát giúp không gian cao cấp, sáng thoáng và liền mạch hơn.</p></div></div>
+            <div class="card product-card" data-tile-size="80x160"><img loading="lazy" src="https://images.unsplash.com/photo-1615874694520-474822394e73?auto=format&fit=crop&w=900&q=85" alt="Gạch vân kim loại 80x160 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Vân Kim Loại 80x160</h3><span class="price">1.150.000đ / thùng</span></div><span class="size-tag">80x160 cm</span><p>Sắc ghi ánh kim hiện đại, phù hợp tiền sảnh, mặt tiền trong nhà và không gian thương mại.</p></div></div>
+            <div class="card product-card" data-tile-size="120x120"><img loading="lazy" src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=900&q=85" alt="Gạch marble cao cấp 120x120 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Marble Cao Cấp 120x120</h3><span class="price">1.250.000đ / thùng</span></div><span class="size-tag">120x120 cm</span><p>Khổ vuông lớn, vân marble sang trọng, dành cho sảnh biệt thự, khách sạn và showroom.</p></div></div>
+            <div class="card product-card" data-tile-size="120x120"><img loading="lazy" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=85" alt="Gạch vân bê tông 120x120 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Vân Bê Tông 120x120</h3><span class="price">1.180.000đ / thùng</span></div><span class="size-tag">120x120 cm</span><p>Phong cách tối giản cao cấp, tạo mặt sàn liền mạch cho sảnh, phòng khách và văn phòng.</p></div></div>
+            <div class="card product-card" data-tile-size="120x120"><img loading="lazy" src="https://images.unsplash.com/photo-1600573472550-8090b5e0745e?auto=format&fit=crop&w=900&q=85" alt="Gạch vân gỗ bản lớn 120x120 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Vân Gỗ Bản Lớn 120x120</h3><span class="price">1.320.000đ / thùng</span></div><span class="size-tag">120x120 cm</span><p>Họa tiết gỗ cân đối trên khổ lớn, phù hợp không gian nghỉ dưỡng và phòng khách rộng.</p></div></div>
+            <div class="card product-card" data-tile-size="120x240"><img loading="lazy" src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=85" alt="Gạch slab marble 120x240 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Slab Marble 120x240</h3><span class="price">2.450.000đ / tấm</span></div><span class="size-tag">120x240 cm</span><p>Tấm khổ siêu lớn cho đảo bếp, quầy lễ tân, mảng tường và các thiết kế đẳng cấp.</p></div></div>
+            <div class="card product-card" data-tile-size="120x240"><img loading="lazy" src="https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=900&q=85" alt="Gạch slab vân đá 120x240 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Slab Vân Đá 120x240</h3><span class="price">2.680.000đ / tấm</span></div><span class="size-tag">120x240 cm</span><p>Vân đá nối dài ấn tượng, phù hợp mặt dựng nội thất, vách trang trí và khu thương mại.</p></div></div>
+            <div class="card product-card" data-tile-size="120x240"><img loading="lazy" src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85" alt="Gạch slab xi măng 120x240 cm"><div class="card-content"><div class="product-topline"><h3>Gạch Slab Xi Măng 120x240</h3><span class="price">2.350.000đ / tấm</span></div><span class="size-tag">120x240 cm</span><p>Bề mặt xi măng hiện đại, phù hợp phong cách công nghiệp, tối giản và không gian lớn.</p></div></div>
+        </div>
+        <div class="catalog-empty" id="material-empty" hidden>Không tìm thấy sản phẩm phù hợp. Hãy thử nới rộng khoảng giá hoặc xóa bớt điều kiện lọc.</div>
+        <div class="catalog-pagination" aria-label="Phân trang sản phẩm"></div>
+    </section>
+
+    <section class="section">
+        <h2 class="section-title">Chọn gạch theo từng không gian</h2>
+        <div class="section-divider"></div>
+        <div class="info-grid">
+            <div class="info-card"><h3>Phòng khách</h3><p>Ưu tiên bề mặt có vân vừa phải, màu sáng hoặc trung tính để tạo cảm giác rộng và dễ phối với nội thất.</p></div>
+            <div class="info-card"><h3>Phòng tắm</h3><p>Nên chọn bề mặt chống trơn, ít bám bẩn, khả năng kháng nước tốt và có màu sắc giúp không gian luôn sạch.</p></div>
+            <div class="info-card"><h3>Sân vườn</h3><p>Gạch có độ cứng cao, bề mặt nhám và màu tự nhiên sẽ phù hợp hơn với thời tiết và khu vực ngoài trời.</p></div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="about-content">
+            <h2 class="section-title" style="text-align: left;">Tư vấn vật liệu theo công trình</h2>
+            <div class="section-divider" style="margin-left: 0;"></div>
+            <p>Mức giá trên trang mang tính tham khảo để khách hàng dễ hình dung từng nhóm sản phẩm. Giá thực tế có thể thay đổi theo kích thước, số lượng, thương hiệu, thời điểm nhập hàng và địa điểm giao.</p>
+            <p>Khi liên hệ, khách hàng chỉ cần gửi diện tích cần lát, mục đích sử dụng và hình ảnh không gian. Đội ngũ tư vấn sẽ hỗ trợ tính khối lượng, gợi ý mẫu phù hợp và báo giá theo nhu cầu thực tế.</p>
+            <a class="btn btn-primary" href="lien-he.html">Nhận tư vấn vật liệu</a>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="cta-banner">
+            <div>
+                <h3>Đặt lịch tư vấn miễn phí</h3>
+                <p>Chúng tôi hỗ trợ tư vấn vật liệu, khối lượng và báo giá phù hợp với công trình của bạn.</p>
+            </div>
+            <a class="btn btn-primary" href="lien-he.html">Liên hệ ngay</a>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <h3>Hoàng Hải Luxury</h3>
+                <p>Đồng hành cùng khách hàng từ vật liệu, thiết kế nội thất, thi công trọn gói đến các không gian giải trí, nghỉ dưỡng và phát triển bền vững.</p>
+                <ul class="footer-contact">
+                    <li>Địa chỉ: Căn 4A Khu Nhà Thương Mại, Xã Châu Thành, Tỉnh Tây&nbsp;Ninh</li>
+                    <li>Hotline: <a href="tel:0833088578">0833 088 578</a></li>
+                    <li>Email: <a href="mailto:pndat171203@gmail.com">pndat171203@gmail.com</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Menu</h4>
+                <ul class="footer-list">
+                    <li><a href="index.html">Trang chủ</a></li>
+                    <li><a href="gioi-thieu.html">Giới thiệu</a></li>
+                    <li><a href="https://xaydunghoangphu.com.vn/" target="_blank" rel="noopener noreferrer">Xây nhà trọn gói</a></li>
+                    <li><a href="khu-vui-choi.html">Khu vui chơi</a></li>
+                    <li><a href="vat-lieu.html">Vật liệu</a></li>
+                    <li><a href="noi-that.html">Nội thất</a></li>
+                    <li><a href="ho-so-nang-luc.html">Năng lực</a></li>
+                    <li><a href="lien-he.html">Liên hệ</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Dịch vụ</h4>
+                <ul class="footer-list">
+                    <li><a href="vat-lieu.html">Vật liệu xây dựng</a></li>
+                    <li><a href="noi-that.html">Thiết kế & nội thất</a></li>
+                    <li><a href="lien-he.html">Thi công nhà trọn gói</a></li>
+                    <li><a href="khu-vui-choi.html">Khu vui chơi giải trí</a></li>
+                    <li><a href="ho-so-nang-luc.html">Tư vấn dự án</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Chính sách</h4>
+                <ul class="footer-list">
+                    <li><a href="lien-he.html">Chính sách bảo hành</a></li>
+                    <li><a href="lien-he.html">Chính sách bảo mật</a></li>
+                    <li><a href="lien-he.html">Điều khoản sử dụng</a></li>
+                    <li><a href="lien-he.html">Hướng dẫn mua hàng</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 Hoàng Hải Luxury. Tất cả các quyền được bảo lưu.</p>
+        </div>
+    </footer>
+    <script src="main.js"></script>
+</body>
+</html>
