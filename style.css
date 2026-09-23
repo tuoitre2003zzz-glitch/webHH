@@ -4323,16 +4323,16 @@ header {
     right: auto;
     bottom: 28px;
     max-width: calc(100% - 56px);
-    background: rgba(7, 22, 34, 0.76);
+    background: linear-gradient(110deg, rgba(7, 22, 34, 0.68), rgba(16, 47, 60, 0.42));
     color: #ffffff;
     padding: 19px 23px 20px;
     border: 1px solid color-mix(in srgb, var(--banner-accent) 72%, transparent);
     border-left: 5px solid var(--banner-accent);
     border-radius: 10px 18px 18px 10px;
-    box-shadow: 0 10px 22px rgba(0,0,0,0.24);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
     min-width: 0;
     z-index: 2;
-    backdrop-filter: none;
+    backdrop-filter: blur(5px);
 }
 
 .hero-slide--home .feature-box {
@@ -4341,7 +4341,7 @@ header {
 
 .hero-slide--living .feature-box {
     --banner-accent: #55e0c0;
-    background: rgba(8, 31, 39, 0.78);
+    background: linear-gradient(110deg, rgba(8, 31, 39, 0.7), rgba(11, 70, 67, 0.44));
 }
 
 .feature-box small {
@@ -4738,7 +4738,7 @@ header {
 
     .hero-slider {
         min-height: 0;
-        aspect-ratio: 1.45;
+        aspect-ratio: 1.25;
     }
 
     .feature-box {
@@ -4747,11 +4747,11 @@ header {
         bottom: 18px;
         max-width: calc(100% - 36px);
         min-width: 0;
-        padding: 12px 15px;
+        padding: 16px 18px;
     }
 
     .feature-box h3 {
-        font-size: clamp(18px, 5.3vw, 24px);
+        font-size: 24px;
     }
 }
 
@@ -5003,55 +5003,45 @@ header {
     .nav-list {
         position: fixed;
         top: 64px;
-        left: 0;
+        left: -100%;
         width: 100%;
-        height: 54px;
-        max-height: 54px;
+        height: calc(100dvh - 64px);
+        max-height: calc(100dvh - 64px);
         background: var(--primary-color);
-        flex-direction: row;
-        align-items: center;
+        flex-direction: column;
+        align-items: stretch;
         justify-content: flex-start;
-        gap: 4px;
-        padding: 4px 12px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        overscroll-behavior-x: contain;
+        padding: 28px 20px 40px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
         -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
-        scrollbar-color: var(--accent-color) rgba(255,255,255,0.1);
-        transform: translateY(-110%);
-        transition: transform 0.3s ease-in-out;
+        transition: 0.4s ease-in-out;
     }
 
     .nav-list.active {
-        transform: translateY(0);
+        left: 0;
     }
 
     .nav-list li {
         flex: 0 0 auto;
         margin: 0;
-        text-align: left;
+        text-align: center;
     }
 
     .nav-list > li > a {
-        display: inline-flex;
-        align-items: center;
-        height: 44px;
-        padding: 0 12px;
-        white-space: nowrap;
-        border-radius: 6px;
+        display: block;
+        padding: 11px 8px;
     }
 
     .nav-group {
-        width: auto;
-        text-align: left;
+        width: min(320px, 90%);
+        text-align: center;
     }
 
     .nav-group-trigger {
-        justify-content: flex-start;
+        justify-content: center;
         width: 100%;
-        height: 44px;
-        padding: 0 12px;
+        padding: 5px 0;
         font-size: 15px;
     }
 
