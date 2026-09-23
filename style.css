@@ -5473,6 +5473,10 @@ header {
         grid-template-columns: minmax(0, 1fr);
     }
 
+    main .homepage-process-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
     main .stats-grid,
     main .about-metrics-inner {
         grid-template-columns: repeat(3, minmax(0, 1fr));
