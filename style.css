@@ -5400,14 +5400,15 @@ header {
         top: 64px;
         left: 0;
         width: 100%;
-        height: calc(100dvh - 64px);
-        max-height: calc(100dvh - 64px);
+        height: 70vh;
+        max-height: 70vh;
         align-items: stretch;
         padding: 24px 18px 36px;
         overflow-x: hidden;
-        overflow-y: auto;
+        overflow-y: scroll;
         overscroll-behavior: contain;
         -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
     }
@@ -5426,5 +5427,26 @@ header {
     .nav-list > li > a {
         display: block;
         padding: 12px 10px;
+    }
+
+    .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+    }
+
+    .hero-stats > div {
+        min-width: 0;
+        text-align: center;
+    }
+
+    .hero-stats strong {
+        font-size: 22px;
+    }
+
+    .hero-stats span {
+        font-size: 10px;
+        line-height: 1.3;
     }
 }
