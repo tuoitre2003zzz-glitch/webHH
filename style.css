@@ -5431,14 +5431,14 @@ header {
 
     .hero-stats {
         display: grid;
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
         width: 100%;
     }
 
     .hero-stats > div {
         min-width: 0;
-        text-align: left;
+        text-align: center;
     }
 
     .hero-stats strong {
