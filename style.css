@@ -5575,7 +5575,9 @@ header {
     }
 
     main .oracle-card {
-        grid-template-columns: minmax(0, 1fr);
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
         gap: 8px;
         padding: 22px 12px 14px;
         text-align: center;
@@ -5583,8 +5585,7 @@ header {
 
     main .oracle-seal {
         position: relative;
-        grid-column: 1 / -1;
-        grid-row: 1;
+        flex: 0 0 auto;
         width: 88px;
         height: 88px;
         margin: 0 auto;
@@ -5596,8 +5597,7 @@ header {
     }
 
     main .oracle-card-copy {
-        grid-column: 1 / -1;
-        grid-row: 2;
+        flex: 0 0 auto;
         width: 100%;
         min-height: 0;
         padding-top: 4px;
@@ -5614,8 +5614,7 @@ header {
     }
 
     main .oracle-metrics {
-        grid-column: 1 / -1;
-        grid-row: 3;
+        flex: 0 0 auto;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 7px;
         text-align: left;
