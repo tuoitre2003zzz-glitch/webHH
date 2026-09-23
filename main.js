@@ -1181,21 +1181,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (mobileMenu && navList) {
-        const closeMobileMenu = () => {
-            navList.classList.remove('active');
-            mobileMenu.setAttribute('aria-expanded', 'false');
-            document.body.classList.remove('menu-open');
-        };
-
-        mobileMenu.setAttribute('aria-expanded', 'false');
         mobileMenu.addEventListener('click', () => {
-            const isOpen = navList.classList.toggle('active');
-            mobileMenu.setAttribute('aria-expanded', String(isOpen));
-            document.body.classList.toggle('menu-open', isOpen);
-        });
-
-        navList.querySelectorAll('a').forEach((link) => {
-            link.addEventListener('click', closeMobileMenu);
+            navList.classList.toggle('active');
         });
     }
 });
