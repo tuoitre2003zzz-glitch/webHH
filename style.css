@@ -4313,22 +4313,23 @@ header {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(10,10,10,0.02) 22%, rgba(10,10,10,0.12) 48%, rgba(8,18,28,0.82) 100%);
+    background: linear-gradient(180deg, rgba(10,10,10,0.02) 26%, rgba(10,10,10,0.08) 58%, rgba(8,18,28,0.48) 100%);
 }
 
 .feature-box {
     --banner-accent: #ffcf5a;
     position: absolute;
     left: 28px;
-    right: 28px;
+    right: auto;
     bottom: 28px;
-    background: linear-gradient(110deg, rgba(7, 22, 34, 0.94), rgba(16, 47, 60, 0.82));
+    max-width: calc(100% - 56px);
+    background: linear-gradient(110deg, rgba(7, 22, 34, 0.68), rgba(16, 47, 60, 0.42));
     color: #ffffff;
     padding: 19px 23px 20px;
     border: 1px solid color-mix(in srgb, var(--banner-accent) 72%, transparent);
     border-left: 5px solid var(--banner-accent);
     border-radius: 10px 18px 18px 10px;
-    box-shadow: 0 18px 36px rgba(0,0,0,0.36);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
     min-width: 0;
     z-index: 2;
     backdrop-filter: blur(5px);
@@ -4340,7 +4341,7 @@ header {
 
 .hero-slide--living .feature-box {
     --banner-accent: #55e0c0;
-    background: linear-gradient(110deg, rgba(8, 31, 39, 0.95), rgba(11, 70, 67, 0.84));
+    background: linear-gradient(110deg, rgba(8, 31, 39, 0.7), rgba(11, 70, 67, 0.44));
 }
 
 .feature-box small {
@@ -4742,8 +4743,9 @@ header {
 
     .feature-box {
         left: 18px;
-        right: 18px;
+        right: auto;
         bottom: 18px;
+        max-width: calc(100% - 36px);
         min-width: 0;
         padding: 16px 18px;
     }
@@ -5003,12 +5005,16 @@ header {
         top: 64px;
         left: -100%;
         width: 100%;
-        height: calc(100vh - 64px);
+        height: calc(100dvh - 64px);
+        max-height: calc(100dvh - 64px);
         background: var(--primary-color);
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
         justify-content: flex-start;
-        padding-top: 50px;
+        padding: 28px 20px 40px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
         transition: 0.4s ease-in-out;
     }
 
@@ -5017,7 +5023,14 @@ header {
     }
 
     .nav-list li {
-        margin: 10px 0;
+        flex: 0 0 auto;
+        margin: 0;
+        text-align: center;
+    }
+
+    .nav-list > li > a {
+        display: block;
+        padding: 11px 8px;
     }
 
     .nav-group {
