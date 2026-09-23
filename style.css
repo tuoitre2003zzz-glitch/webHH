@@ -5468,6 +5468,108 @@ header {
     color: var(--primary-color);
 }
 
+@media screen and (max-width: 600px) {
+    .nav-list a::after {
+        bottom: 0;
+        height: 3px;
+    }
+
+    main .section {
+        padding: 42px 10px;
+    }
+
+    main .grid-container,
+    main .info-grid,
+    main .feature-grid,
+    main .process-grid,
+    main .about-service-grid,
+    main .news-grid,
+    main .about-value-grid,
+    main .feng-shui-result-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    main .about-metrics-inner {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    main .stats-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    main .card,
+    main .feature-card,
+    main .process-step,
+    main .about-feature-card,
+    main .news-card,
+    main .result-card {
+        border-radius: 10px;
+    }
+
+    main .card img,
+    main .product-card img,
+    main .news-card img {
+        height: 112px;
+    }
+
+    main .card-content,
+    main .product-card .card-content,
+    main .feature-card,
+    main .process-step,
+    main .about-feature-card,
+    main .result-card {
+        padding: 10px 9px 12px;
+    }
+
+    main .card-content h3,
+    main .feature-card h3,
+    main .process-step h3,
+    main .about-feature-card h3,
+    main .news-card h3,
+    main .result-card h3 {
+        font-size: 14px;
+        line-height: 1.25;
+    }
+
+    main .card-content p,
+    main .feature-card p,
+    main .process-step p,
+    main .about-feature-card p,
+    main .news-card p,
+    main .result-card p {
+        font-size: 11px;
+        line-height: 1.45;
+    }
+
+    main .about-metric {
+        min-height: 110px;
+        padding: 14px 6px;
+    }
+
+    main .about-metric strong {
+        font-size: 26px;
+    }
+
+    main .stat-box {
+        padding: 10px 4px;
+    }
+
+    main .stat-number {
+        font-size: 24px;
+    }
+
+    main .stat-box p {
+        font-size: 10px;
+        line-height: 1.25;
+    }
+
+    main .about-service-card {
+        min-height: 220px;
+    }
+}
+
 .catalog-summary {
     min-height: 24px;
     margin: 0 0 22px;
@@ -5541,4 +5643,96 @@ header {
     color: #9b742e;
     font-size: 12px;
     font-style: normal;
+}
+
+@media screen and (max-width: 600px) {
+    .nav-list a::after {
+        bottom: 0;
+        height: 3px;
+    }
+
+    main .section {
+        padding: 42px 10px;
+    }
+
+    main .grid-container,
+    main .info-grid,
+    main .feature-grid,
+    main .process-grid,
+    main .about-service-grid,
+    main .news-grid,
+    main .about-value-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    main .about-metrics-inner {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    main .stats-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    main .card img,
+    main .product-card img,
+    main .news-card img {
+        height: 112px;
+    }
+
+    main .card-content,
+    main .product-card .card-content,
+    main .feature-card,
+    main .process-step,
+    main .about-feature-card,
+    main .result-card {
+        padding: 10px 9px 12px;
+    }
+
+    main .card-content h3,
+    main .feature-card h3,
+    main .process-step h3,
+    main .about-feature-card h3,
+    main .news-card h3,
+    main .result-card h3 {
+        font-size: 14px;
+        line-height: 1.25;
+    }
+
+    main .card-content p,
+    main .feature-card p,
+    main .process-step p,
+    main .about-feature-card p,
+    main .news-card p,
+    main .result-card p {
+        font-size: 11px;
+        line-height: 1.45;
+    }
+
+    main .about-metric {
+        min-height: 110px;
+        padding: 14px 6px;
+    }
+
+    main .about-metric strong {
+        font-size: 26px;
+    }
+
+    main .stat-box {
+        padding: 10px 4px;
+    }
+
+    main .stat-number {
+        font-size: 24px;
+    }
+
+    main .stat-box p {
+        font-size: 10px;
+        line-height: 1.25;
+    }
+
+    main .about-service-card {
+        min-height: 220px;
+    }
 }
