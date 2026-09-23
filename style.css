@@ -5390,3 +5390,41 @@ header {
     font-size: 12px;
     font-style: normal;
 }
+
+@media screen and (max-width: 768px) {
+    nav {
+        min-width: 0;
+    }
+
+    .nav-list {
+        top: 64px;
+        left: 0;
+        width: 100%;
+        height: calc(100dvh - 64px);
+        max-height: calc(100dvh - 64px);
+        align-items: stretch;
+        padding: 24px 18px 36px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .nav-list.active {
+        left: 0;
+        transform: translateX(0);
+    }
+
+    .nav-list li {
+        width: 100%;
+        margin: 0;
+        text-align: center;
+    }
+
+    .nav-list > li > a {
+        display: block;
+        padding: 12px 10px;
+    }
+}
