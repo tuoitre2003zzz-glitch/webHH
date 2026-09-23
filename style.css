@@ -5649,20 +5649,21 @@ header {
 
     .nav-list {
         position: fixed;
-        z-index: 1100;
-        top: 62px;
+        z-index: 1200;
+        top: 0;
         left: 0;
-        width: min(320px, 88vw);
-        height: calc(100dvh - 62px);
+        width: 100vw;
+        height: 100dvh;
+        max-height: none !important;
         display: flex;
         flex-direction: column;
-        align-items: stretch;
-        gap: 2px;
-        padding: 18px 14px 30px;
+        align-items: center;
+        gap: 4px;
+        padding: 88px 24px 36px;
         overflow-x: hidden;
         overflow-y: auto;
-        background: rgba(18,18,18,0.98);
-        box-shadow: 18px 0 45px rgba(0,0,0,0.28);
+        background: #090909;
+        box-shadow: none;
         transform: translateX(-105%) !important;
         transition: transform 0.28s ease;
         touch-action: pan-y;
@@ -5676,7 +5677,7 @@ header {
     .nav-list li,
     .nav-list > li > a,
     .nav-group {
-        width: 100%;
+        width: min(320px, 100%);
         margin: 0;
     }
 
@@ -5684,9 +5685,11 @@ header {
     .nav-group-trigger {
         display: flex;
         align-items: center;
+        justify-content: center;
         min-height: 44px;
         padding: 10px 12px;
         font-size: 14px;
+        text-align: center;
     }
 
     .hero-section {

@@ -1194,6 +1194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const toggleMobileMenu = () => {
             const isOpen = navList.classList.toggle('active');
             mobileMenu.setAttribute('aria-expanded', String(isOpen));
+            document.body.style.overflow = isOpen ? 'hidden' : '';
         };
 
         mobileMenu.addEventListener('click', () => {
@@ -1211,6 +1212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             link.addEventListener('click', () => {
                 navList.classList.remove('active');
                 mobileMenu.setAttribute('aria-expanded', 'false');
+                document.body.style.overflow = '';
             });
         });
     }
