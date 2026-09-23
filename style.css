@@ -5469,7 +5469,7 @@ header {
         gap: 10px;
     }
 
-    main .process-grid {
+    .process-grid {
         grid-template-columns: minmax(0, 1fr);
     }
 
