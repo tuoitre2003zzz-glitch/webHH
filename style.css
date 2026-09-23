@@ -5686,9 +5686,10 @@ header {
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 44px;
-        padding: 10px 12px;
-        font-size: 14px;
+        min-height: 52px;
+        padding: 12px 14px;
+        font-size: 18px;
+        line-height: 1.35;
         text-align: center;
     }
 
