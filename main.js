@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fengMapResultTitle = document.querySelector('#map-result-title');
     const fengMapResultText = document.querySelector('#map-result-text');
     const oracleForm = document.querySelector('#feng-shui-form');
+    const oraclePanel = document.querySelector('.oracle-panel');
     const oracleCard = document.querySelector('#oracle-card');
     const oracleStatus = document.querySelector('#oracle-status');
     const oracleCode = document.querySelector('#oracle-code');
@@ -197,6 +198,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (!birthYearIsValid || !phoneIsValid || !birthDayIsValid) return;
             saveProfile(data);
+            if (window.matchMedia('(max-width: 768px)').matches) {
+                window.setTimeout(() => {
+                    oraclePanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 80);
+            }
             const directionLabels = {
                 north: 'Bắc',
                 northeast: 'Đông Bắc',

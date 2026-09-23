@@ -5450,3 +5450,146 @@ header {
         line-height: 1.3;
     }
 }
+
+@media screen and (max-width: 600px) {
+    main .section {
+        padding: 48px 12px;
+    }
+
+    main .grid-container,
+    main .info-grid,
+    main .feature-grid,
+    main .process-grid,
+    main .about-value-grid,
+    main .about-service-grid,
+    main .news-grid,
+    main .contact-services-grid,
+    main .estimate-guide {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    main .stats-grid,
+    main .about-metrics-inner {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    main .estimate-grid,
+    main .feng-shui-fields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    main .feng-shui-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    main .feng-shui-birth-field,
+    main .feng-shui-wide {
+        grid-column: 1 / -1;
+    }
+
+    main .feng-shui-form,
+    main .oracle-panel {
+        padding: 18px 14px;
+        border-radius: 16px;
+    }
+
+    main .oracle-panel {
+        scroll-margin-top: 76px;
+    }
+
+    main .card,
+    main .info-card,
+    main .feature-card,
+    main .process-step,
+    main .about-feature-card,
+    main .news-card,
+    main .result-card {
+        border-radius: 12px;
+    }
+
+    main .card img,
+    main .product-card img,
+    main .news-card img {
+        height: 132px;
+    }
+
+    main .card-content,
+    main .product-card .card-content,
+    main .info-card,
+    main .feature-card,
+    main .process-step,
+    main .about-feature-card,
+    main .result-card {
+        padding: 14px 12px;
+    }
+
+    main .card-content h3,
+    main .info-card h3,
+    main .feature-card h3,
+    main .process-step h3,
+    main .about-feature-card h3,
+    main .news-card h3,
+    main .result-card h3 {
+        font-size: 16px;
+        line-height: 1.3;
+    }
+
+    main .card-content p,
+    main .info-card p,
+    main .feature-card p,
+    main .process-step p,
+    main .about-feature-card p,
+    main .news-card p,
+    main .result-card p {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    main .about-metric {
+        min-height: 112px;
+        padding: 14px 6px;
+    }
+
+    main .about-metric strong,
+    main .stat-number {
+        font-size: 26px;
+    }
+
+    main .about-metric .metric-label,
+    main .stat-box p {
+        font-size: 10px;
+        line-height: 1.3;
+    }
+
+    main .about-service-card {
+        min-height: 240px;
+    }
+
+    main .feng-shui-form-heading h2,
+    main .oracle-heading h2 {
+        font-size: 18px;
+    }
+
+    main .oracle-card {
+        grid-template-columns: 64px minmax(0, 1fr);
+        gap: 12px;
+        padding: 18px 12px 14px;
+    }
+
+    main .oracle-card-copy h3 {
+        font-size: 18px;
+    }
+
+    main .oracle-metrics {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+    }
+
+    main .oracle-metrics strong {
+        font-size: 11px;
+    }
+}
