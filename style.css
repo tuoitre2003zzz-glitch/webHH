@@ -3705,59 +3705,9 @@ header {
     .process-grid,
     .about-service-grid,
     .news-grid,
-    .about-value-grid,
     .feng-shui-result-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
-    }
-
-    .about-metrics-inner {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .about-metric {
-        min-height: 132px;
-        padding: 20px 10px;
-    }
-
-    .about-metric:nth-child(2n) {
-        border-right: 0;
-    }
-
-    .about-metric strong {
-        font-size: 32px;
-    }
-
-    .about-feature-card {
-        padding: 16px 12px;
-        border-radius: 12px;
-    }
-
-    .about-feature-card h3 {
-        font-size: 16px;
-    }
-
-    .about-feature-card p {
-        font-size: 13px;
-        line-height: 1.5;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .stat-box {
-        min-width: 0;
-        padding: 16px 8px;
-    }
-
-    .stat-number {
-        font-size: clamp(22px, 7vw, 34px);
-    }
-
-    .stat-box p {
-        font-size: 11px;
-        line-height: 1.35;
     }
 
     .card,
