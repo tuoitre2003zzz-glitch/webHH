@@ -5575,18 +5575,42 @@ header {
     }
 
     main .oracle-card {
-        grid-template-columns: 64px minmax(0, 1fr);
-        gap: 12px;
-        padding: 18px 12px 14px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+        padding: 22px 12px 14px;
+        text-align: center;
+    }
+
+    main .oracle-seal {
+        width: 88px;
+        height: 88px;
+        margin: 0 auto;
+    }
+
+    main .bagua-wheel {
+        width: 82px;
+        height: 82px;
+    }
+
+    main .oracle-card-copy {
+        min-height: 0;
+        padding-top: 4px;
     }
 
     main .oracle-card-copy h3 {
         font-size: 18px;
     }
 
+    main .oracle-card-copy p,
+    main .oracle-reading p {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
     main .oracle-metrics {
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 7px;
+        text-align: left;
     }
 
     main .oracle-metrics strong {
