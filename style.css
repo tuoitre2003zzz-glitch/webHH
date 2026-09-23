@@ -4323,16 +4323,16 @@ header {
     right: auto;
     bottom: 28px;
     max-width: calc(100% - 56px);
-    background: linear-gradient(110deg, rgba(7, 22, 34, 0.68), rgba(16, 47, 60, 0.42));
+    background: rgba(7, 22, 34, 0.76);
     color: #ffffff;
     padding: 19px 23px 20px;
     border: 1px solid color-mix(in srgb, var(--banner-accent) 72%, transparent);
     border-left: 5px solid var(--banner-accent);
     border-radius: 10px 18px 18px 10px;
-    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.24);
     min-width: 0;
     z-index: 2;
-    backdrop-filter: blur(5px);
+    backdrop-filter: none;
 }
 
 .hero-slide--home .feature-box {
@@ -4341,7 +4341,7 @@ header {
 
 .hero-slide--living .feature-box {
     --banner-accent: #55e0c0;
-    background: linear-gradient(110deg, rgba(8, 31, 39, 0.7), rgba(11, 70, 67, 0.44));
+    background: rgba(8, 31, 39, 0.78);
 }
 
 .feature-box small {
@@ -4738,7 +4738,7 @@ header {
 
     .hero-slider {
         min-height: 0;
-        aspect-ratio: 1.25;
+        aspect-ratio: 1.45;
     }
 
     .feature-box {
@@ -4747,11 +4747,11 @@ header {
         bottom: 18px;
         max-width: calc(100% - 36px);
         min-width: 0;
-        padding: 16px 18px;
+        padding: 12px 15px;
     }
 
     .feature-box h3 {
-        font-size: 24px;
+        font-size: clamp(18px, 5.3vw, 24px);
     }
 }
 
@@ -5003,45 +5003,55 @@ header {
     .nav-list {
         position: fixed;
         top: 64px;
-        left: -100%;
+        left: 0;
         width: 100%;
-        height: calc(100dvh - 64px);
-        max-height: calc(100dvh - 64px);
+        height: 54px;
+        max-height: 54px;
         background: var(--primary-color);
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        align-items: center;
         justify-content: flex-start;
-        padding: 28px 20px 40px;
-        overflow-y: auto;
-        overscroll-behavior: contain;
+        gap: 4px;
+        padding: 4px 12px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        overscroll-behavior-x: contain;
         -webkit-overflow-scrolling: touch;
-        transition: 0.4s ease-in-out;
+        scrollbar-width: thin;
+        scrollbar-color: var(--accent-color) rgba(255,255,255,0.1);
+        transform: translateY(-110%);
+        transition: transform 0.3s ease-in-out;
     }
 
     .nav-list.active {
-        left: 0;
+        transform: translateY(0);
     }
 
     .nav-list li {
         flex: 0 0 auto;
         margin: 0;
-        text-align: center;
+        text-align: left;
     }
 
     .nav-list > li > a {
-        display: block;
-        padding: 11px 8px;
+        display: inline-flex;
+        align-items: center;
+        height: 44px;
+        padding: 0 12px;
+        white-space: nowrap;
+        border-radius: 6px;
     }
 
     .nav-group {
-        width: min(320px, 90%);
-        text-align: center;
+        width: auto;
+        text-align: left;
     }
 
     .nav-group-trigger {
-        justify-content: center;
+        justify-content: flex-start;
         width: 100%;
-        padding: 5px 0;
+        height: 44px;
+        padding: 0 12px;
         font-size: 15px;
     }
 
