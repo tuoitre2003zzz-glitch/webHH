@@ -62,20 +62,11 @@
                     <div class="hero-slider" aria-label="Banner quảng cáo">
                         <div class="hero-track">
                             <div class="hero-slide hero-slide--home active">
-                                <img src="img/ưu đãi banner.png" alt="Không gian nội thất hiện đại">
-                                <div class="feature-box">
-                                    <small><span class="feature-box-dot"></span> ƯU ĐÃI XÂY NHÀ</small>
-                                    <h3>Tặng nội thất <strong>30 triệu</strong></h3>
-                                </div>
+                                <img src="img/ưu đãi banner.png" alt="Chương trình ưu đãi xây nhà, tặng nội thất 30 triệu" fetchpriority="high">
                             </div>
                             <div class="hero-slide hero-slide--living">
-                                <img src="img/uudaikvc banner.png" alt="Căn hộ sang trọng">
-                                <div class="feature-box">
-                                    <small><span class="feature-box-dot"></span> ƯU ĐÃI ĐẶC BIỆT</small>
-                                    <h3>Khu vui chơi trọn gói</h3>
-                                </div>
+                                <img src="img/uudaikvc banner.png" alt="Chương trình ưu đãi khu vui chơi Hoàng Hải Luxury">
                             </div>
-                      
                         </div>
                         <button class="hero-arrow hero-arrow--prev" type="button" aria-label="Ảnh trước">&#10094;</button>
                         <button class="hero-arrow hero-arrow--next" type="button" aria-label="Ảnh tiếp theo">&#10095;</button>
@@ -83,20 +74,6 @@
                     <div class="slider-dots" aria-label="Chuyển slide">
                         <button class="slider-dot active" type="button" aria-label="Slide 1"></button>
                         <button class="slider-dot" type="button" aria-label="Slide 2"></button>
-                        <button class="slider-dot" type="button" aria-label="Slide 3"></button>
-                    </div>
-                    <div class="brand-marquee" aria-label="Nhãn hàng đồng hành">
-                        <span class="brand-marquee-label"></span>
-                        <div class="brand-marquee-window">
-                            <div class="brand-marquee-track">
-                                <div class="brand-marquee-set" aria-hidden="true">
-                                    <span>VIGLACERA</span><span>TOTO</span><span>INAX</span><span>CAESAR</span><span>PRIME</span><span>HOÀNG PHÚ</span>
-                                </div>
-                                <div class="brand-marquee-set" aria-hidden="true">
-                                    <span>VIGLACERA</span><span>TOTO</span><span>INAX</span><span>CAESAR</span><span>PRIME</span><span>HOÀNG PHÚ</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -212,8 +189,50 @@
                         <div class="estimate-breakdown-total"><span>Tổng diện tích quy đổi</span><strong id="estimate-floor-area">--</strong></div>
                         <div><span>Đơn giá tham khảo</span><strong id="estimate-unit-price">--</strong></div>
                     </div>
-                    <a class="btn btn-secondary" href="lien-he.html">Nhận báo giá chính xác</a>
+
+                    <a class="estimate-promo-timer estimate-promo-link" href="lien-he.html" data-promo-countdown aria-live="polite">
+                        <span class="estimate-promo-label">
+                            <span class="estimate-promo-badge" aria-hidden="true">⚡</span>
+                            Ưu đãi báo giá
+                        </span>
+                        <div class="estimate-promo-clock">
+                            <span class="estimate-promo-unit"><strong data-promo-hours>00</strong><small>Giờ</small></span>
+                            <span class="estimate-promo-separator">:</span>
+                            <span class="estimate-promo-unit"><strong data-promo-minutes>00</strong><small>Phút</small></span>
+                            <span class="estimate-promo-separator">:</span>
+                            <span class="estimate-promo-unit"><strong data-promo-seconds>00</strong><small>Giây</small></span>
+                        </div>
+                        <p>Đừng chậm, ưu đãi sẽ kết thúc sớm.</p>
+                        <span class="estimate-promo-cta">Nhận báo giá chính xác</span>
+                    </a>
                 </aside>
+            </div>
+
+            <div class="estimate-package-preview" id="estimate-package-preview" hidden>
+                <div class="estimate-package-content">
+                    <div class="estimate-package-materials-wrap">
+                        <div class="estimate-package-table-wrap" id="estimate-package-table-wrap">
+                            <table class="estimate-package-table">
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Tên vật tư</th>
+                                        <th>Hình ảnh</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="estimate-package-list"></tbody>
+                            </table>
+                        </div>
+                        <div class="estimate-package-notes" id="estimate-package-notes" hidden>
+                            <h3 class="estimate-package-notes-title"><span class="estimate-package-warning-icon" aria-hidden="true">!</span> Lưu ý</h3>
+                            <ol>
+                                <li><strong>Không bao gồm:</strong> Các thiết bị điện tử, gia dụng, máy năng lượng mặt trời, đèn chùm, đèn thả trần, camera, cửa kéo, cửa cuốn, thiết bị chống sét, hệ thống chữa cháy, nội thất, máy hút khói, quạt điện, rèm cửa, bồn tắm.</li>
+                                <li><strong>Vận chuyển:</strong> Trường hợp đường vào công trình nhỏ, phải chuyên chở vật liệu bằng phương tiện nhỏ hoặc thô sơ, đơn giá theo thỏa thuận.</li>
+                                <li><strong>Chi phí chưa bao gồm:</strong> San lấp mặt bằng, phá dỡ công trình cũ, gia cố nền móng bằng cọc (nếu có).</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="estimate-guide" aria-label="Hướng dẫn công thức tính">

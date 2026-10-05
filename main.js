@@ -1,3 +1,20 @@
+{
+    const pageLoadingStartedAt = performance.now();
+    let pageLoadingFinished = false;
+
+    const finishPageLoading = () => {
+        if (pageLoadingFinished) return;
+        pageLoadingFinished = true;
+        const minimumDisplayTime = 750;
+        const remainingDisplayTime = Math.max(0, minimumDisplayTime - (performance.now() - pageLoadingStartedAt));
+        window.setTimeout(() => document.documentElement.classList.add('page-loaded'), remainingDisplayTime);
+    };
+
+    window.addEventListener('load', finishPageLoading, { once: true });
+    window.setTimeout(finishPageLoading, 3000);
+    if (document.readyState === 'complete') finishPageLoading();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const mobileMenu = document.getElementById('mobile-menu');
     const navList = document.querySelector('.nav-list');
@@ -7,7 +24,62 @@ document.addEventListener('DOMContentLoaded', () => {
     const heroPrevious = document.querySelector('.hero-arrow--prev');
     const heroNext = document.querySelector('.hero-arrow--next');
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const catalogReturnKey = 'catalog-return-position';
+    window.addEventListener('pageshow', (event) => {
+        const navigationType = performance.getEntriesByType('navigation')[0]?.type;
+        if (navigationType !== 'back_forward' && !event.persisted) return;
+
+        const savedPosition = JSON.parse(sessionStorage.getItem(catalogReturnKey) || 'null');
+        if (!savedPosition
+            || savedPosition.page !== window.location.pathname
+            || Date.now() - savedPosition.savedAt > 10 * 60 * 1000) return;
+
+        sessionStorage.removeItem(catalogReturnKey);
+        window.requestAnimationFrame(() => {
+            window.scrollTo({ top: savedPosition.scrollY, left: 0, behavior: 'instant' });
+        });
+    });
     const isVietnameseMobile = (value) => /^(03[2-9]|05[2568]|07[06789]|08[156789]|09[0-9])\d{7}$/.test(value);
+    let scrollAnimationId = 0;
+    const smoothScrollTo = (targetY, duration = 650) => {
+        window.cancelAnimationFrame(scrollAnimationId);
+        const startY = window.scrollY;
+        const distance = targetY - startY;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || Math.abs(distance) < 1) {
+            window.scrollTo({ top: targetY, left: 0, behavior: 'instant' });
+            return;
+        }
+
+        const startTime = performance.now();
+        const animate = (currentTime) => {
+            const progress = Math.min((currentTime - startTime) / duration, 1);
+            const easedProgress = 1 - ((1 - progress) ** 3);
+            window.scrollTo({ top: startY + (distance * easedProgress), left: 0, behavior: 'instant' });
+            if (progress < 1) {
+                scrollAnimationId = window.requestAnimationFrame(animate);
+            } else {
+                scrollAnimationId = 0;
+            }
+        };
+        scrollAnimationId = window.requestAnimationFrame(animate);
+    };
+    const reloadScrollKey = 'site-page-reload-scroll';
+    history.scrollRestoration = 'manual';
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem(reloadScrollKey, String(window.scrollY));
+    });
+    if (performance.getEntriesByType('navigation')[0]?.type === 'reload') {
+        const previousScrollY = Number(sessionStorage.getItem(reloadScrollKey));
+        sessionStorage.removeItem(reloadScrollKey);
+        window.addEventListener('pageshow', () => {
+            if (Number.isFinite(previousScrollY) && previousScrollY > 0) {
+                window.scrollTo({ top: previousScrollY, left: 0, behavior: 'instant' });
+            }
+            window.requestAnimationFrame(() => smoothScrollTo(0));
+        }, { once: true });
+    } else {
+        sessionStorage.removeItem(reloadScrollKey);
+    }
 
     document.querySelectorAll('.brand-marquee-track').forEach((track) => {
         Array.from(track.children).forEach((set) => {
@@ -43,7 +115,405 @@ document.addEventListener('DOMContentLoaded', () => {
     const materialCount = document.querySelector('#material-count');
     const materialSummary = document.querySelector('#material-summary');
     const materialEmpty = document.querySelector('#material-empty');
-    const interiorCards = Array.from(document.querySelectorAll('.product-card[data-interior-category]'));
+    const interiorProductGrid = document.querySelector('#interior-product-grid');
+    if (interiorProductGrid) {
+        const interiorProducts = [
+            ['living-room', 'Phòng khách · Ghế thư giãn', 'Ghế thư giãn lưng gỗ', 'UPH-425V-134-A', 132760000, true, '21691/uph-425v-134-a_main-600x600-bc87582.jpg', 'living-room-5/chairs-2/fleur-wood-back-lounge-chair'],
+            ['living-room', 'Phòng khách · Ghế thư giãn', 'Ghế thư giãn bọc vải màu kem', 'UPH-425V-031-A', 81530000, true, '21738/uph-425v-031-a_main-600x600-bc87582.jpg', 'living-room-5/chairs-2/seta-chair-oatmeal'],
+            ['living-room', 'Phòng khách · Ghế thư giãn', 'Ghế bọc nệm nâu xám', 'UPH-425V-032-A', 91030000, true, '21748/uph-425v-032-a-600x600-bc87582.jpg', 'living-room-5/chairs-2/overlap-chair-dark-taupe'],
+            ['living-room', 'Phòng khách · Ghế thư giãn', 'Ghế thư giãn dài nâu xám', 'UPH-425V-072-A', 222750000, true, '21758/uph-425v-072-a_main-600x600-bc87582.jpg', 'living-room-5/chairs-2/overlap-bedroom-chaise-dark-taupe'],
+            ['living-room', 'Phòng khách · Ghế thư giãn', 'Ghế bọc nệm màu be', 'UPH-425V-032-B', 107370000, true, '21810/uph-425v-032-b_main-600x600-bc87582.jpg', 'living-room-5/chairs-2/overlap-chair-ecru'],
+            ['living-room', 'Phòng khách · Ghế thư giãn', 'Ghế thư giãn dài màu be', 'UPH-425V-072-B', 260770000, true, '21811/uph-425v-072-b_main-600x600-bc87582.jpg', 'living-room-5/chairs-2/overlap-bedroom-chaise-ecru'],
+            ['living-room', 'Phòng khách · Ghế thư giãn', 'Ghế thư giãn dáng ôm', 'UPH-425V-071-A', 219480000, true, '21850/uph-425v-071-a_main-600x600-bc87582.jpg', 'living-room-5/chairs-2/echo-lounge'],
+            ['living-room', 'Phòng khách · Ghế thư giãn', 'Ghế thư giãn xanh ngọc', 'UPH-024-131-A', 118950000, true, '21443/uph-024-131-a.jpg', 'living-room-5/chairs-2/gelee-accent-chair-apatite'],
+            ['dining-room', 'Phòng ăn · Ghế ăn', 'Ghế ăn lưng gỗ', 'UPH-425V-135-A', 85540000, true, '21672/uph-425v-135-a_main-600x600-bc87582.jpg', 'dinning-room/dining-chairs/fleur-wood-back-dining-chair'],
+            ['dining-room', 'Phòng ăn · Ghế ăn', 'Ghế ăn có tay vịn', 'CLA-425V-272', 46330000, true, '21763/cla-425v-272_main-600x600-bc87582.jpg', 'dinning-room/dining-chairs/overlap-arm-dining-chair'],
+            ['dining-room', 'Phòng ăn · Ghế ăn', 'Ghế ăn bọc nệm màu xanh lá', 'CLA-425V-291C', 38160000, true, '21808/cla-425v-291c_main-600x600-bc87582.jpg', 'dinning-room/dining-chairs/precipice-uph-dining-chair-eucalyptus'],
+            ['dining-room', 'Phòng ăn · Ghế ăn', 'Ghế ăn bọc nệm màu vàng nghệ', 'CLA-425V-291A', 38160000, true, '21823/cla-425v-291a_main-600x600-bc87582.jpg', 'dinning-room/dining-chairs/precipice-uph-dining-chair-saffron'],
+            ['dining-room', 'Phòng ăn · Ghế ăn', 'Ghế ăn bọc nệm màu kem', 'CLA-425V-291B', 38160000, true, '21824/cla-425v-291b_main-600x600-bc87582.jpg', 'dinning-room/dining-chairs/precipice-uph-dining-chair-oatmeal'],
+            ['dining-room', 'Phòng ăn · Ghế quầy bar', 'Ghế bar Overlap màu trắng ngà', 'CLA-425V-301', 94890000, true, '21764/cla-425v-301_main-600x600-bc87582.jpg', 'dinning-room/bars-counter-stools-1/overlap-bar-stool-ivory'],
+            ['dining-room', 'Phòng ăn · Ghế quầy bar', 'Ghế quầy thấp màu trắng ngà', 'CLA-425V-311', 92660000, true, '21765/cla-425v-311_main-600x600-bc87582.jpg', 'dinning-room/bars-counter-stools-1/overlap-counter-stool-ivory'],
+            ['dining-room', 'Phòng ăn · Ghế quầy bar', 'Ghế bar dáng tròn', 'CLA-024-301', 61780000, true, '21481/cla-024-301.jpg', 'dinning-room/bars-counter-stools-1/another-round-bar-stool'],
+            ['dining-room', 'Phòng ăn · Ghế quầy bar', 'Ghế quầy thấp dáng tròn', 'CLA-024-311', 58660000, true, '21482/cla-024-311.jpg', 'dinning-room/bars-counter-stools-1/another-round-counter-stool'],
+            ['living-room', 'Phòng khách · Ghế băng', 'Sofa cong 2,2 m màu kem', 'UPH-025-017-A', 160680000, false, '22140/uph-025-017-a_main-600x600-bc87582.jpg', 'living-room-5/sofas/altura-88-sofa-pearl'],
+            ['living-room', 'Phòng khách · Ghế băng', 'Sofa dài 2,6 m màu kem', 'UPH-025-015-A', 179690000, false, '22141/uph-025-015-a_main-600x600-bc87582.jpg', 'living-room-5/sofas/altura-104-sofa-pearl'],
+            ['living-room', 'Phòng khách · Ghế băng', 'Sofa màu xanh lá', 'UPH-025-016-C', 233740000, false, '22125/uph-025-016-c_main-600x600-bc87582.jpg', 'living-room-5/sofas/chyrsalis-sofa-eucalyptus'],
+            ['living-room', 'Phòng khách · Ghế băng', 'Sofa màu đỏ rượu', 'UPH-025-016-B', 233740000, false, '22132/uph-025-016-b_main-600x600-bc87582.jpg', 'living-room-5/sofas/chrysalis-sofa-rouge'],
+            ['living-room', 'Phòng khách · Ghế băng', 'Sofa màu kem', 'UPH-025-115-A', 217700000, false, '22135/uph-025-115-a_main-600x600-bc87582.jpg', 'living-room-5/sofas/madera-sofa-oatmeal'],
+            ['living-room', 'Phòng khách · Ghế băng ghép góc', 'Sofa góc không tay màu kem', 'UPH-025-ALH3-A', 161420000, true, '22126/uph-025-alh3-a_main-600x600-bc87582.jpg', 'living-room-5/sofas-module/madera-armless-laf-bumper-oatmeal'],
+            ['living-room', 'Phòng khách · Bàn trang trí', 'Bàn trang trí tròn màu caramel', 'CLA-024-424', 116870000, true, '21450/cla-024-424.jpg', 'living-room-5/benches-ottomans-2/gelee-round-accent-table-caramello'],
+            ['living-room', 'Phòng khách · Đôn', 'Đôn bọc nệm màu sáng', 'UPH-024-041-B', 74100000, true, '21493/uph-024-041-b.jpg', 'living-room-5/benches-ottomans-2/bello-ottoman'],
+            ['living-room', 'Phòng khách · Đôn', 'Đôn bọc nệm màu tối', 'UPH-024-041-A', 73060000, true, '21509/uph-024-041-a.jpg', 'living-room-5/benches-ottomans-2/bello-ottoman-2'],
+            ['living-room', 'Phòng khách · Đôn', 'Đôn tròn bọc vải', 'CLA-023-081', 34824000, true, '21120/cla-023-081.jpg', 'living-room-5/benches-ottomans-2/ritz'],
+            ['bedroom', 'Phòng ngủ · Ghế băng cuối giường', 'Ghế băng cuối giường', 'CLA-424-083', 99350000, true, '21136/cla-424-083.jpg', 'living-room-5/benches-ottomans-2/for-the-love-of-bed-bench'],
+            ['living-room', 'Phòng khách · Bàn trà', 'Bàn trà có kệ gỗ', 'CLA-425V-4027', 175820000, true, '21680/cla-425v-4027_main.jpg', 'living-room-5/cocktail-tables-2/fleur-open-cocktail-table-wwood-shelf'],
+            ['living-room', 'Phòng khách · Bàn trà', 'Bàn trà tròn màu sáng', 'CLA-425V-4025', 160680000, true, '21719/cla-425v-4025_main-600x600-bc87582.jpg', 'living-room-5/cocktail-tables-2/overlap-round-cocktail-table-light'],
+            ['living-room', 'Phòng khách · Bàn trà', 'Bàn trà dáng thấp', 'CLA-425V-4011', 190080000, true, '21732/cla-425v-4011_main-600x600-bc87582.jpg', 'living-room-5/cocktail-tables-2/counter-balance-cocktail-table'],
+            ['living-room', 'Phòng khách · Bàn trà', 'Bàn trà vuông vân đá', 'CLA-425V-403', 86280000, true, '21736/cla-425v-403_main-600x600-bc87582.jpg', 'living-room-5/cocktail-tables-2/seta-square-cocktail-table-craze'],
+            ['bedroom', 'Phòng ngủ · Giường', 'Giường bọc nệm cỡ lớn', 'CLA-425V-104', 209980000, true, '21717/cla-425v-104_main-600x600-bc87582.jpg', 'bed-room/beds/fleur-uph-queen-bed'],
+            ['bedroom', 'Phòng ngủ · Giường', 'Giường bọc nệm cỡ đại', 'CLA-425V-124', 229140000, true, '21718/cla-425v-104_main-600x600-bc87582.jpg', 'bed-room/beds/fleur-uph-king-bed'],
+            ['bedroom', 'Phòng ngủ · Giường', 'Giường dáng thấp cỡ lớn', 'CLA-425V-102', 143900000, true, '21726/cla-425v-102_main-600x600-bc87582.jpg', 'bed-room/beds/counter-balance-queen-bed'],
+            ['bedroom', 'Phòng ngủ · Giường', 'Giường dáng thấp cỡ đại', 'CLA-425V-122', 160970000, true, '21727/cla-425v-102_main-600x600-bc87582.jpg', 'bed-room/beds/counter-balance-king-bed'],
+            ['bedroom', 'Phòng ngủ · Tủ đầu giường', 'Tủ đầu giường cỡ nhỏ', 'CLA-425V-0610', 86430000, true, '21696/cla-425v-0610_main-600x600-bc87582.jpg', 'bed-room/nightstands/fleur-small-nightstand'],
+            ['bedroom', 'Phòng ngủ · Tủ đầu giường', 'Tủ đầu giường kệ mở', 'CLA-425V-0611', 81680000, true, '21709/cla-425v-0611_main-600x600-bc87582.jpg', 'bed-room/nightstands/fleur-open-nightstand'],
+            ['bedroom', 'Phòng ngủ · Tủ đầu giường', 'Tủ đầu giường cỡ lớn', 'CLA-425V-069', 101570000, true, '21716/cla-425v-069_main-600x600-bc87582.jpg', 'bed-room/nightstands/fleur-large-nightstand'],
+            ['bedroom', 'Phòng ngủ · Bàn trang điểm', 'Bàn trang điểm màu tối', 'CLA-425V-075', 170180000, true, '21771/cla-425v-075_main-600x600-bc87582.jpg', 'bed-room/dressing-table/overlap-vanity-dark'],
+            ['bedroom', 'Phòng ngủ · Bàn trang điểm', 'Bàn trang điểm màu sáng', 'CLA-425V-072', 170180000, true, '21801/cla-425v-072_main-600x600-bc87582.jpg', 'bed-room/dressing-table/overlap-vanity-light'],
+            ['bedroom', 'Phòng ngủ · Bàn trang điểm', 'Bàn trang điểm nhiều ngăn', 'CLA-425V-073', 541130000, true, '21847/cla-425v-073_main-600x600-bc87582.jpg', 'bed-room/dressing-table/monaco-vanity'],
+            ['bedroom', 'Phòng ngủ · Bàn trang điểm', 'Bàn trang điểm hiện đại', 'CLA-425V-074', 172410000, true, '21849/cla-425v-074_front-600x600-bc87582.jpg', 'bed-room/dressing-table/absinthe-vanity'],
+            ['dining-room', 'Phòng ăn · Bàn ăn', 'Bàn ăn gỗ hiện đại', 'CLA-425V-2014', 304130000, true, '21669/cla-425v-2014c.jpg', 'dinning-room/dining-tables/fleur-dining-table'],
+            ['dining-room', 'Phòng ăn · Bàn ăn', 'Bàn ăn chữ nhật màu tối', 'CLA-425V-2011', 331750000, true, '21762/cla-425v-2011_main-600x600-bc87582.jpg', 'dinning-room/dining-tables/overlap-rectangle-dining-table-dark'],
+            ['dining-room', 'Phòng ăn · Bàn ăn', 'Bàn ăn tròn 152 cm màu sáng', 'CLA-425V-2021', 243090000, true, '21789/cla-425v-2021_main-600x600-bc87582.jpg', 'dinning-room/dining-tables/wish-you-were-here-60-rnd-dining-tbl-lt'],
+            ['dining-room', 'Phòng ăn · Bàn ăn', 'Bàn ăn chữ nhật màu sáng', 'CLA-425V-2024', 331750000, true, '21806/cla-425v-2024_main-600x600-bc87582.jpg', 'dinning-room/dining-tables/overlap-rectangle-dinig-tbl-light'],
+            ['dining-room', 'Phòng ăn · Tủ buffet', 'Tủ buffet dáng thanh lịch', 'CLA-425V-256', 275620000, true, '21675/cla-425v-256_main-600x600-bc87582.jpg', 'dinning-room/sideboards-1/fleur-sideboard'],
+            ['dining-room', 'Phòng ăn · Tủ buffet', 'Tủ buffet kệ mở', 'CLA-425V-2511', 351650000, true, '21678/cla-425v-2511_main-600x600-bc87582.jpg', 'dinning-room/sideboards-1/fleur-open-sideboard'],
+            ['dining-room', 'Phòng ăn · Tủ buffet', 'Tủ buffet màu tối', 'CLA-425V-254', 322250000, true, '21761/cla-425v-254_main-600x600-bc87582.jpg', 'dinning-room/sideboards-1/overlap-sideboard-dark'],
+            ['working-room', 'Phòng làm việc · Bàn làm việc', 'Bàn làm việc thanh mảnh', 'CLA-023-532', 113900000, true, '21135/cla-023-532.jpg', 'working-room/consoles-desks-1/axis'],
+            ['decor', 'Gương & phụ kiện · Gương soi', 'Gương toàn thân khung tối', 'CLA-425V-042', 256460000, true, '21767/cla-425v-042_main-600x600-bc87582.jpg', 'decor-accessories/mirrors/overlap-floor-mirror-dark'],
+            ['decor', 'Gương & phụ kiện · Gương soi', 'Gương treo tường khung tối', 'CLA-425V-043', 94890000, true, '21768/cla-425v-043_main-600x600-bc87582.jpg', 'decor-accessories/mirrors/overlap-wall-mirror-dark'],
+            ['decor', 'Gương & phụ kiện · Gương soi', 'Gương toàn thân khung sáng', 'CLA-425V-044', 256460000, true, '21796/cla-425v-044_main-600x600-bc87582.jpg', 'decor-accessories/mirrors/overlap-floor-mirror-light']
+        ];
+        const productNumberFormat = new Intl.NumberFormat('vi-VN');
+        const productImageRoot = 'https://cdchomedesigncenter.com/Data/Sites/1/Product/';
+
+        interiorProductGrid.replaceChildren(...interiorProducts.map(([category, room, name, , price, isPriceFrom, imagePath]) => {
+            const card = document.createElement('article');
+            card.className = 'card product-card interior-product-card';
+            card.dataset.interiorCategory = category;
+            card.dataset.interiorPrice = String(price);
+
+            const image = document.createElement('img');
+            image.src = productImageRoot + imagePath;
+            image.alt = name;
+            image.loading = 'lazy';
+            image.decoding = 'async';
+            card.appendChild(image);
+
+            const content = document.createElement('div');
+            content.className = 'card-content';
+            const topline = document.createElement('div');
+            topline.className = 'product-topline';
+            const title = document.createElement('h3');
+            title.textContent = name;
+            const priceLabel = document.createElement('span');
+            priceLabel.className = 'price';
+            priceLabel.textContent = `${isPriceFrom ? 'Từ ' : ''}${productNumberFormat.format(price)} ₫`;
+            topline.append(title, priceLabel);
+
+            const categoryLabel = document.createElement('span');
+            categoryLabel.className = 'interior-product-room';
+            categoryLabel.textContent = room;
+            content.append(topline, categoryLabel);
+            card.appendChild(content);
+            return card;
+        }));
+        interiorProductGrid.hidden = false;
+    }
+
+    const interiorCards = Array.from(document.querySelectorAll('#interior-product-grid .product-card[data-interior-category]'));
+    const buildProductDetailUrl = (type, card) => {
+        const image = card.querySelector('img');
+        const name = card.querySelector('h3')?.textContent.trim() || '';
+        const priceText = type === 'vat-lieu'
+            ? card.querySelector('.material-price-value')?.textContent
+            : card.dataset.interiorPrice;
+        const price = Number((priceText || '').replace(/[^\d]/g, ''));
+        const params = new URLSearchParams({
+            nhom: type,
+            ten: name,
+            loai: type === 'vat-lieu'
+                ? 'Gạch ốp lát'
+                : card.querySelector('.interior-product-room')?.textContent.trim() || '',
+            gia: String(price),
+            anh: image?.getAttribute('src') || '',
+            nguon: type === 'vat-lieu' ? 'vat-lieu.html' : 'noi-that.html'
+        });
+
+        if (type === 'vat-lieu') {
+            params.set('kich-thuoc', card.dataset.tileSize || '');
+            params.set('don-vi', card.querySelector('.material-price-unit')?.textContent.trim() || '');
+        } else {
+            params.set('gia-tu', card.querySelector('.price')?.textContent.trim().startsWith('Từ ') ? '1' : '0');
+        }
+
+        return `chi-tiet-san-pham.html?${params.toString()}`;
+    };
+
+    const enableProductDetailNavigation = (cards, type) => {
+        cards.forEach((card) => {
+            card.tabIndex = 0;
+            card.setAttribute('role', 'link');
+            card.setAttribute('aria-label', `Xem thông tin ${card.querySelector('h3')?.textContent.trim() || 'sản phẩm'}`);
+            const rememberCatalogPosition = () => {
+                sessionStorage.setItem(catalogReturnKey, JSON.stringify({
+                    page: window.location.pathname,
+                    url: window.location.href,
+                    scrollY: window.scrollY,
+                    savedAt: Date.now()
+                }));
+            };
+            card.addEventListener('click', () => {
+                rememberCatalogPosition();
+                window.location.href = buildProductDetailUrl(type, card);
+            });
+            card.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    rememberCatalogPosition();
+                    window.location.href = buildProductDetailUrl(type, card);
+                }
+            });
+        });
+    };
+
+    enableProductDetailNavigation(productCards, 'vat-lieu');
+    enableProductDetailNavigation(interiorCards, 'noi-that');
+
+    const productDetail = document.querySelector('#product-detail');
+    if (productDetail) {
+        const params = new URLSearchParams(window.location.search);
+        const type = params.get('nhom');
+        const name = params.get('ten')?.trim();
+        const category = params.get('loai')?.trim();
+        const imagePath = params.get('anh')?.trim();
+        const price = Number(params.get('gia'));
+        const sourcePage = params.get('nguon');
+        const isValidImage = (value) => {
+            if (!value || value.startsWith('/') || value.includes('\\') || /(^|\/)\.\.(\/|$)/.test(value)) return false;
+            try {
+                const imageUrl = new URL(value, document.baseURI);
+                if (imageUrl.protocol === 'https:') {
+                    if (imageUrl.hostname === 'cdchomedesigncenter.com') {
+                        return imageUrl.pathname.startsWith('/Data/Sites/1/Product/');
+                    }
+                    return ['hailinh.com.vn', 'www.hailinh.com.vn', 'images.hailinh.com.vn'].includes(imageUrl.hostname)
+                        && imageUrl.pathname.startsWith('/uploads/shops/');
+                }
+                return !/^[a-z][a-z\d+.-]*:/i.test(value) && !value.startsWith('//');
+            } catch {
+                return false;
+            }
+        };
+        const isValidProduct = (['vat-lieu', 'noi-that'].includes(type || '')
+            && Boolean(name)
+            && Boolean(category)
+            && Number.isFinite(price)
+            && price > 0
+            && isValidImage(imagePath));
+
+        const detailContent = document.querySelector('#product-detail-content');
+        const errorContent = document.querySelector('#product-detail-error');
+        const backLink = document.querySelector('#product-detail-back');
+        if (isValidProduct && detailContent && errorContent && backLink) {
+            const safeSourcePage = sourcePage === 'noi-that.html' ? sourcePage : 'vat-lieu.html';
+            const image = document.querySelector('#product-detail-image');
+            const contactLink = document.querySelector('#product-detail-contact');
+            const priceValue = document.querySelector('#product-detail-price');
+            const priceUnit = document.querySelector('#product-detail-unit');
+            const facts = document.querySelector('#product-detail-facts');
+            const priceLabel = document.querySelector('#product-detail-price-label');
+            const note = document.querySelector('#product-detail-note');
+            const description = document.querySelector('#product-detail-description');
+            const usesList = document.querySelector('#product-detail-uses');
+            const thumbnails = document.querySelector('#product-gallery-thumbnails');
+            const size = params.get('kich-thuoc');
+            const unit = params.get('don-vi');
+            const isPriceFrom = params.get('gia-tu') === '1';
+            const formatter = new Intl.NumberFormat('vi-VN');
+
+            backLink.href = safeSourcePage;
+            backLink.addEventListener('click', (event) => {
+                const savedPosition = JSON.parse(sessionStorage.getItem(catalogReturnKey) || 'null');
+                const sourcePath = new URL(safeSourcePage, window.location.href).pathname;
+                const savedUrl = savedPosition?.url ? new URL(savedPosition.url) : null;
+                if (history.length > 1
+                    && savedPosition?.page === sourcePath
+                    && savedUrl?.pathname === sourcePath
+                    && Date.now() - savedPosition.savedAt <= 10 * 60 * 1000) {
+                    event.preventDefault();
+                    history.back();
+                }
+            });
+            document.querySelector('#product-detail-eyebrow').textContent = type === 'vat-lieu' ? 'VẬT LIỆU XÂY DỰNG' : 'SẢN PHẨM NỘI THẤT';
+            document.querySelector('#product-detail-name').textContent = name;
+            document.querySelector('#product-detail-category').textContent = category;
+            image.src = imagePath;
+            image.alt = name;
+            priceValue.textContent = formatter.format(price) + ' ₫';
+            priceUnit.textContent = unit || '';
+            priceLabel.textContent = type === 'vat-lieu' ? 'Giá tham khảo' : isPriceFrom ? 'Giá từ' : 'Giá tham khảo';
+            note.textContent = type === 'vat-lieu'
+                ? 'Giá vật liệu mang tính tham khảo; vui lòng liên hệ để xác nhận theo số lượng và thời điểm.'
+                : 'Vui lòng liên hệ để xác nhận giá và thông tin sản phẩm mới nhất.';
+
+            const getProductGuidance = () => {
+                if (type === 'vat-lieu') {
+                    const isOutdoor = /sân|ngoài trời|ban công/i.test(name);
+                    return {
+                        description: `Gạch ${size ? `khổ ${size} cm ` : ''}dùng để hoàn thiện bề mặt sàn hoặc tường, tạo lớp phủ dễ vệ sinh và đồng bộ với phong cách không gian. Nên chọn bề mặt và quy cách theo vị trí thi công thực tế.`,
+                        uses: isOutdoor
+                            ? ['Lát sân vườn, hiên nhà hoặc ban công', 'Tham khảo bề mặt phù hợp khu vực ngoài trời']
+                            : ['Lát nền phòng khách, phòng ngủ hoặc khu sinh hoạt', 'Có thể tham khảo để ốp tường trang trí']
+                    };
+                }
+
+                const normalizedCategory = category.toLowerCase();
+                if (/ghế thư giãn/.test(normalizedCategory)) {
+                    return {
+                        description: 'Ghế tạo chỗ ngồi riêng để đọc sách, nghỉ ngơi hoặc tiếp khách. Kiểu dáng và màu sắc giúp bổ sung điểm nhấn cho khu vực sinh hoạt.',
+                        uses: ['Đặt tại phòng khách hoặc góc đọc sách', 'Phối cùng sofa, bàn phụ và đèn đứng']
+                    };
+                }
+                if (/ghế ăn/.test(normalizedCategory)) {
+                    return {
+                        description: 'Ghế dùng cho khu vực ăn uống, hỗ trợ tư thế ngồi thoải mái trong bữa ăn và có thể phối cùng bàn ăn phù hợp.',
+                        uses: ['Bố trí quanh bàn ăn gia đình', 'Dùng trong phòng ăn hoặc khu vực dùng bữa']
+                    };
+                }
+                if (/ghế quầy bar/.test(normalizedCategory)) {
+                    return {
+                        description: 'Ghế quầy cao dùng tại bàn bar hoặc quầy bếp. Nên đối chiếu chiều cao ghế với mặt quầy trước khi lựa chọn.',
+                        uses: ['Bố trí tại quầy bar gia đình', 'Dùng cạnh đảo bếp hoặc quầy cao phù hợp']
+                    };
+                }
+                if (/ghế băng cuối giường/.test(normalizedCategory)) {
+                    return {
+                        description: 'Ghế băng bổ sung chỗ ngồi và bề mặt đặt đồ ở cuối giường, đồng thời hoàn thiện bố cục phòng ngủ.',
+                        uses: ['Đặt ở cuối giường', 'Dùng trong phòng ngủ hoặc phòng thay đồ']
+                    };
+                }
+                if (/ghế|sofa|đôn/.test(normalizedCategory)) {
+                    return {
+                        description: 'Sản phẩm tạo chỗ ngồi tiện nghi cho sinh hoạt, tiếp khách và thư giãn. Có thể phối cùng bàn trà để hoàn thiện khu vực tiếp khách.',
+                        uses: ['Bố trí trong phòng khách hoặc không gian sinh hoạt chung', 'Dùng làm chỗ ngồi thư giãn hằng ngày']
+                    };
+                }
+                if (/giường|tủ đầu giường|bàn trang điểm/.test(normalizedCategory)) {
+                    return {
+                        description: 'Sản phẩm phục vụ sinh hoạt và lưu trữ trong phòng ngủ, giúp sắp xếp không gian nghỉ ngơi gọn gàng, thuận tiện.',
+                        uses: ['Bố trí trong phòng ngủ gia đình hoặc phòng nghỉ', 'Phối hợp với giường và nội thất phòng ngủ']
+                    };
+                }
+                if (/bàn ăn|tủ buffet/.test(normalizedCategory)) {
+                    return {
+                        description: 'Sản phẩm hỗ trợ sinh hoạt, dùng bữa và sắp xếp vật dụng trong khu vực ăn uống; phù hợp để phối đồng bộ cùng bộ bàn ghế.',
+                        uses: ['Bố trí tại phòng ăn hoặc khu vực sinh hoạt chung', 'Dùng làm nơi dùng bữa hoặc lưu trữ đồ dùng']
+                    };
+                }
+                if (/bàn trà|bàn trang trí/.test(normalizedCategory)) {
+                    return {
+                        description: 'Món nội thất bổ trợ giúp đặt đồ dùng thường ngày và cân đối bố cục khu vực tiếp khách.',
+                        uses: ['Bố trí cạnh sofa hoặc ghế thư giãn', 'Dùng đặt sách, khay trà và vật dụng trang trí']
+                    };
+                }
+                if (/bàn làm việc/.test(normalizedCategory)) {
+                    return {
+                        description: 'Bề mặt làm việc giúp sắp xếp máy tính, tài liệu và vật dụng cần thiết cho công việc hoặc học tập.',
+                        uses: ['Bố trí trong phòng làm việc hoặc góc học tập', 'Kết hợp cùng ghế và đèn bàn phù hợp']
+                    };
+                }
+                if (/gương/.test(normalizedCategory)) {
+                    return {
+                        description: 'Gương hỗ trợ nhu cầu soi và góp phần tạo cảm giác sáng, thoáng cho không gian.',
+                        uses: ['Bố trí tại phòng ngủ, lối vào hoặc khu vực thay đồ', 'Chọn vị trí lắp đặt phù hợp với diện tích và ánh sáng']
+                    };
+                }
+                return {
+                    description: 'Sản phẩm nội thất có thể kết hợp cùng các món đồ phù hợp để hoàn thiện công năng và bố cục không gian.',
+                    uses: ['Tham khảo bố trí tại không gian gia đình phù hợp', 'Liên hệ để được tư vấn kích thước và cách phối hợp']
+                };
+            };
+            const guidance = getProductGuidance();
+            description.textContent = guidance.description;
+            usesList.replaceChildren(...guidance.uses.map((use) => {
+                const item = document.createElement('li');
+                item.textContent = use;
+                return item;
+            }));
+
+            const getImageIdentity = (src) => {
+                const imageUrl = new URL(src, document.baseURI);
+                return imageUrl.pathname.toLowerCase().replace(/\.(?:jpe?g|png|webp)$/i, '');
+            };
+            const imageViews = [{ src: imagePath }];
+            const imageIdentities = new Set([getImageIdentity(imagePath)]);
+            const supplementaryImages = type === 'noi-that'
+                ? (() => {
+                    const productFolder = imagePath.match(/\/Product\/(\d+)\//)?.[1];
+                    return window.productGalleryImages?.interior?.[productFolder] || [];
+                })()
+                : window.productGalleryImages?.tiles?.[imagePath] || [];
+            supplementaryImages.filter(isValidImage).forEach((src) => {
+                const identity = getImageIdentity(src);
+                if (imageIdentities.has(identity)) return;
+                imageIdentities.add(identity);
+                imageViews.push({ src });
+            });
+
+            const selectImageView = (view, selectedButton) => {
+                image.src = view.src;
+                image.alt = name;
+                thumbnails.querySelectorAll('.product-gallery-thumbnail').forEach((button) => {
+                    const isSelected = button === selectedButton;
+                    button.classList.toggle('is-active', isSelected);
+                    button.setAttribute('aria-pressed', String(isSelected));
+                });
+            };
+
+            thumbnails.replaceChildren(...imageViews.map((view, index) => {
+                const button = document.createElement('button');
+                button.className = `product-gallery-thumbnail${index === 0 ? ' is-active' : ''}`;
+                button.type = 'button';
+                button.setAttribute('aria-label', `Ảnh ${index + 1} của ${name}`);
+                button.setAttribute('aria-pressed', String(index === 0));
+                const thumbnailImage = document.createElement('img');
+                thumbnailImage.src = view.src;
+                thumbnailImage.alt = '';
+                thumbnailImage.loading = 'eager';
+                thumbnailImage.addEventListener('error', () => {
+                    if (index === 0) return;
+                    const wasSelected = button.classList.contains('is-active');
+                    button.remove();
+                    if (wasSelected) {
+                        selectImageView(imageViews[0], thumbnails.querySelector('.product-gallery-thumbnail'));
+                    }
+                }, { once: true });
+                button.appendChild(thumbnailImage);
+                button.addEventListener('click', () => selectImageView(view, button));
+                return button;
+            }));
+            selectImageView(imageViews[0], thumbnails.querySelector('.product-gallery-thumbnail'));
+
+            const factValues = [
+                ['Danh mục', category],
+                ...(size ? [['Kích thước', `${size} cm`]] : [])
+            ];
+            facts.replaceChildren(...factValues.map(([label, value]) => {
+                const fact = document.createElement('div');
+                fact.className = 'product-detail-fact';
+                const factLabel = document.createElement('span');
+                factLabel.textContent = label;
+                const factValue = document.createElement('strong');
+                factValue.textContent = value;
+                fact.append(factLabel, factValue);
+                return fact;
+            }));
+
+            const contactParams = new URLSearchParams({
+                'san-pham': name,
+                'dich-vu': type === 'vat-lieu' ? 'Tư vấn vật liệu xây dựng' : 'Tư vấn Thiết kế Nội thất'
+            });
+            contactLink.href = `lien-he.html?${contactParams.toString()}`;
+            document.title = `${name} | Hoàng Hải Luxury`;
+            detailContent.hidden = false;
+            errorContent.hidden = true;
+        } else {
+            detailContent?.setAttribute('hidden', '');
+            errorContent?.removeAttribute('hidden');
+            if (backLink) backLink.hidden = true;
+        }
+    }
+
     const interiorFilters = Array.from(document.querySelectorAll('.interior-filter'));
     const interiorPagination = document.querySelector('.interior-pagination');
     const interiorSearch = document.querySelector('#interior-search');
@@ -57,6 +527,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const interiorEmpty = document.querySelector('#interior-empty');
     const contactForm = document.querySelector('#contact-form');
     const formStatus = document.querySelector('#form-status');
+    if (contactForm) {
+        const contactParams = new URLSearchParams(window.location.search);
+        const requestedProduct = contactParams.get('san-pham')?.trim();
+        const requestedService = contactParams.get('dich-vu');
+        if (requestedProduct) {
+            const serviceField = contactForm.elements['Dịch vụ quan tâm'];
+            const messageField = contactForm.elements['Nội dung yêu cầu'];
+            if (serviceField && Array.from(serviceField.options).some((option) => option.value === requestedService)) {
+                serviceField.value = requestedService;
+            }
+            if (messageField) {
+                messageField.value = `Tôi muốn được tư vấn về mẫu: ${requestedProduct.slice(0, 120)}`;
+            }
+        }
+    }
     const estimateForm = document.querySelector('#house-estimate-form');
     const estimateTotal = document.querySelector('#estimate-total');
     const estimateArea = document.querySelector('#estimate-area');
@@ -65,6 +550,417 @@ document.addEventListener('DOMContentLoaded', () => {
     const estimateRoofDetail = document.querySelector('#estimate-roof-detail');
     const estimateFloorArea = document.querySelector('#estimate-floor-area');
     const estimateUnitPrice = document.querySelector('#estimate-unit-price');
+    const promoCountdown = document.querySelector('[data-promo-countdown]');
+    const promoHours = document.querySelector('[data-promo-hours]');
+    const promoMinutes = document.querySelector('[data-promo-minutes]');
+    const promoSeconds = document.querySelector('[data-promo-seconds]');
+    const packagePreview = document.querySelector('#estimate-package-preview');
+    const packageList = document.querySelector('#estimate-package-list');
+    const packageTableWrap = document.querySelector('#estimate-package-table-wrap');
+    const packageNotes = document.querySelector('#estimate-package-notes');
+
+    if (packagePreview) {
+        packagePreview.hidden = true;
+    }
+    if (packageTableWrap) {
+        packageTableWrap.hidden = true;
+    }
+    if (packageNotes) {
+        packageNotes.hidden = true;
+    }
+
+    if (promoCountdown && promoHours && promoMinutes && promoSeconds) {
+        const getVietnamNow = () => new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+
+        const updatePromoCountdown = () => {
+            const now = getVietnamNow();
+            const nextMidnight = new Date(now);
+            nextMidnight.setDate(nextMidnight.getDate() + 1);
+            nextMidnight.setHours(0, 0, 0, 0);
+
+            const remaining = Math.max(0, nextMidnight.getTime() - now.getTime());
+            const hours = Math.floor(remaining / (1000 * 60 * 60));
+            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+            promoHours.textContent = String(hours).padStart(2, '0');
+            promoMinutes.textContent = String(minutes).padStart(2, '0');
+            promoSeconds.textContent = String(seconds).padStart(2, '0');
+
+            if (remaining <= 0) {
+                promoCountdown.classList.add('is-expired');
+                if (promoCountdown.querySelector('p')) {
+                    promoCountdown.querySelector('p').textContent = 'Ưu đãi đã kết thúc, vui lòng liên hệ để được tư vấn.';
+                }
+            }
+        };
+
+        updatePromoCountdown();
+        window.setInterval(updatePromoCountdown, 1000);
+    }
+
+    const finishingMaterialsTemplate = [
+        { name: 'Gạch lát nền phòng khách, sinh hoạt chung, bếp - Gạch ceramic 60x60', image: 'img/gach60x60.jpg' },
+        { name: 'Gạch lát nền phòng ngủ - Gạch ceramic 60x60', image: 'img/gach60x60.jpg' },
+        { name: 'Gạch lát nền vệ sinh chống trơn - Gạch ceramic 30x30', image: 'img/img_bangvattu/gach chong tron cmc 30x30 DG3036.png' },
+        { name: 'Gạch ốp tường vệ sinh - Gạch ceramic 30x60', image: 'img/img_bangvattu/gach-op-tuong-30x60-mo-5355.jpg' },
+        { name: 'Gạch lát balcon + sân thượng - 40x40 chống trơn', image: 'img/img_bangvattu/gach40x40 gạch lát ban công sân thượng.jpg' },
+        { name: 'Đá lát tam cấp + cầu thang + mặt bếp - Đen Campuchia / Nâu Anh Quốc', image: 'img/img_bangvattu/đá lát tam cấp đen campuchia.png' },
+        { name: 'Gạch trang trí', image: '', imageText: 'Theo phối cảnh' },
+        { name: 'Cửa đi chính, cửa hậu, cửa balcon, cửa vệ sinh + khóa - Nhôm Namsung hệ 1000 + Khóa tay gạt', image: 'img/img_bangvattu/của nhôm xinfa namsung.jpg' },
+        { name: 'Cửa đi phòng ngủ + khóa - Nhôm Namsung hệ 1000 + Khóa tay gạt + kính mờ', image: 'img/img_bangvattu/của nhôm xinfa kính mờ.jpg' },
+        { name: 'CB, công tắc, ổ cắm, tủ điện, đế âm, mặt - SINO vanlock', image: 'img/img_bangvattu/sino vanlock.jpg' },
+        { name: 'Đèn trang trí vách - Khách hàng chọn', image: 'img/img_bangvattu/đèn_trang_trí_treo_vách-removebg-preview.png' },
+        { name: 'Đèn vách cầu thang - Khách hàng chọn', image: 'img/img_bangvattu/đèn vách cầu thang.webp' },
+        { name: 'Đèn phòng ngủ - Khách hàng chọn', image: 'img/img_bangvattu/đèn phòng ngủ.png' },
+        { name: 'Đèn led âm trần, ánh sáng trắng, một chế độ - MPE 7W', image: 'img/img_bangvattu/Den-LED-am-tran-7W-MPE-RPL3-73C-3-mau.jpg' },
+        { name: 'Đèn led ốp trần nổi phòng vệ sinh - MPE 18W', image: 'img/img_bangvattu/mpe 18w.webp' },
+        { name: 'Chậu rửa chén - INOX 304', image: 'img/img_bangvattu/chau-rua-chen-gorlde-gd-0293-king-home.jpg1664289400' },
+        { name: 'Vòi rửa nóng lạnh - INOX 304', image: 'img/img_bangvattu/big_voi-bep-inax-sfv-21_f1d7128f6d334d4f91f2eaf6c6f664fd_grande.webp' },
+        { name: 'Lavabo rửa mặt', image: 'img/img_bangvattu/châb treo lavabo.jpg' },
+        { name: 'Bồn cầu khối', image: 'img/img_bangvattu/bon-cau-1-khoi-gia-re.jpg' },
+        { name: 'Vòi rửa mặt nóng lạnh - INOX 304', image: 'img/img_bangvattu/voi-chau-rua-mat-viglacera-VG315.jpg' },
+        { name: 'Vòi sen tắm nóng lạnh - INOX 304', image: 'img/img_bangvattu/vòi sen tắm.webp' },
+        { name: 'Gương + kệ kính + móc treo', image: 'img/img_bangvattu/gương nhà tắm.jpg' },
+        { name: 'Lan can tay vịn - Thép hộp sơn tĩnh điện', image: 'img/img_bangvattu/lan-can-cau-thang-sat_1.jpg' },
+        { name: 'Trụ đề pa', image: '', imageText: 'Không có' },
+        { name: 'Bồn nước Đại Thành 1.000m³ - Không bao gồm tháp bồn nước đặt bên ngoài khối nhà', image: 'img/img_bangvattu/bon-nuoc-inox-304-dai-thanh-500l-ngang-1090x1090.jpg' },
+        { name: 'Máy bơm 1HP', image: 'img/img_bangvattu/máy bơm.jpg' }
+    ];
+
+    const packageDetails = {
+        '5700000': {
+            name: 'Gói 5,7 triệu/m² – phần thô',
+            summary: 'Bao gồm vật tư thô cơ bản theo tiêu chuẩn gói 5,7 triệu/m², phù hợp với công trình cần tối ưu chi phí nhưng vẫn đảm bảo kết cấu và vật liệu nền tảng.',
+            materials: [
+                { name: 'Gạch Tuynel', image: 'https://khatra.com.vn/wp-content/uploads/2020/04/gach-tuynel-gia-re.jpg' },
+                { name: 'Cát vàng Tân Châu, Lòng Hồ', image: 'https://thegioivatlieuxaydung.vn/wp-content/uploads/2023/11/cat-vang-xay-dung.jpeg' },
+                { name: 'Đá xanh Đồng Nai hoặc tương đương', image: 'https://vatlieuxaydungbienhoa.com/wp-content/uploads/2025/10/gi%C3%A1-%C4%91%C3%A1-x%C3%A2y-d%E1%BB%B1ng-1x2-t%E1%BA%A1i-Bi%C3%AAn-H%C3%B2a-Đồng-Nai-2.jpg' },
+                { name: 'Xi măng Fico / INSEE / Hà Tiên', image: 'https://cdn-vn.fico-ytl.com/ytl-production-media/ytl-media/assets/Supreme_Standard_mockup_2024_7c16907060.png' },
+                { name: 'Bê tông tươi M250 R28, Khối lượng lớn và có thể thi công đồng loạt', image: 'https://bizweb.dktcdn.net/100/084/618/products/xe-tron-be-tong-howo-cabin-a7.jpg?v=1464936275450' },
+                { name: 'Bê tông cột, đà trộn bằng cối tại công trình', image: 'https://dienmaythanhloi.vn/uploads/maytronbetong250lit.jpg' },
+                { name: 'Thép tròn, thép hình Việt Mỹ', image: 'https://thepduylinh.vn/Files/374/san-pham/thep-my-shengli-vms/vmsdh-2-.jpg' },
+                { name: 'Xà gồ thép hộp tráng kẽm 1,4 ly, Li tô 1,2 ly', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTV4-P_JAgG3bUowmxQMbqGuI131DApCiy7TbhbhQRDMm1BN0iLkMU6OPCP&s=10' },
+                { name: 'Tôn lợp - Tôn lạnh màu Nam Kim 4 dem', image: 'https://thephinh24h.com/wp-content/uploads/2019/10/roof-and-wall-material-galvanized-corrugated16118475400.jpg' },
+                { name: 'Ngói RUBY / SUNRISE', image: 'https://noithatstore.com/UserUpload/Product/Ngoi-mau-Sunrise-da-tron-S11.jpg?Watermark=' },
+                { name: 'Sơn phủ Juton', image: 'img/img_bangvattu/sơn juton phủ.jpg' },
+                { name: 'Bột trét cao cấp Việt Mỹ', image: 'img/img_bangvattu/bột_trét_việt_mỹ-removebg-preview.png' },
+                { name: 'Sơn chống thấm Sika', image: 'https://dienmayhoanggiaphat.com.vn/wp-content/uploads/2023/07/son-chong-tham-ngoai-troi-sika-hgp.jpg' },
+                { name: 'Trần thạch cao 9mm', image: 'https://images.kingled.vn/data/Product/E4BF391A-8059-4BC2-976C-3598025296AA/den-tran-thach-cao-4.jpg' },
+                { name: 'Dây cáp điện CADIVI', image: 'https://codienhaiau.com/wp-content/uploads/2023/01/day-cap-dien-mot-loi-cadivi-cv-vang.jpg' },
+                { name: 'Ống luồn ruột gà', image: 'https://hulatech.vn/wp-content/uploads/2026/08/ong-ruot-ga-sino-vanlock-sp-d16-sp9016cm-7-600x600.webp' },
+                { name: 'Ống nhựa, co, van khóa Bình Minh', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6GjlmBKWTFZmjRbe3WQK9rfbQbt16ls2oNGCOJJveLuZ3Wl0CuN9qdzg&s=10' },
+                { name: 'Ống chịu nhiệt, co, van khóa Đại Thành', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRIGOptThqHvUhY-zddRFwqPmhbYrh64lCVipC6ljnWKYXKHNtux1ZHKz_&s=10' }
+            ],
+            finishingMaterials: finishingMaterialsTemplate
+        },
+
+        '6000000-6199000': {
+            name: 'Gói 6,0–6,199 triệu/m²',
+            summary: 'Danh mục vật tư riêng cho gói xây dựng từ 6,0 đến 6,199 triệu/m².',
+            materials: [
+                { name: 'Gạch Tuynel', image: 'https://khatra.com.vn/wp-content/uploads/2020/04/gach-tuynel-gia-re.jpg' },
+                { name: 'Cát vàng Tân Châu, Lòng Hồ', image: 'https://thegioivatlieuxaydung.vn/wp-content/uploads/2023/11/cat-vang-xay-dung.jpeg' },
+                { name: 'Đá xanh Đồng Nai hoặc tương đương', image: 'https://vatlieuxaydungbienhoa.com/wp-content/uploads/2025/10/gi%C3%A1-%C4%91%C3%A1-x%C3%A2y-d%E1%BB%B1ng-1x2-t%E1%BA%A1i-Bi%C3%AAn-H%C3%B2a-%C4%90%E1%BB%93ng-Nai-2.jpg' },
+                { name: 'Xi măng Fico / INSEE / Hà Tiên', image: 'https://cdn-vn.fico-ytl.com/ytl-production-media/ytl-media/assets/Supreme_Standard_mockup_2024_7c16907060.png' },
+                { name: 'Bê tông tươi M250 R28, Khối lượng lớn và có thể thi công đồng loạt', image: 'https://bizweb.dktcdn.net/100/084/618/products/xe-tron-be-tong-howo-cabin-a7.jpg?v=1464936275450' },
+                { name: 'Bê tông cột, đà trộn bằng cối tại công trình', image: 'https://dienmaythanhloi.vn/uploads/maytronbetong250lit.jpg' },
+                { name: 'Thép tròn, thép hình Pomina', image: 'img/img_bangvattu_6tr/THEP-VAN-POMINA.jpg' },
+                { name: 'Xà gồ thép hộp tráng kẽm 1,4 ly, Li tô 1,2 ly', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTV4-P_JAgG3bUowmxQMbqGuI131DApCiy7TbhbhQRDMm1BN0iLkMU6OPCP&s=10' },
+                { name: 'Tôn lợp - Tôn lạnh màu Nam Kim 4 dem', image: 'https://thephinh24h.com/wp-content/uploads/2019/10/roof-and-wall-material-galvanized-corrugated16118475400.jpg' },
+                { name: 'Ngói RUBY / SUNRISE', image: 'https://noithatstore.com/UserUpload/Product/Ngoi-mau-Sunrise-da-tron-S11.jpg?Watermark=' },
+                { name: 'Sơn phủ Juton', image: 'img/img_bangvattu_6tr/essence dễ lau chùi.png' },
+                { name: 'Bột trét cao cấp JOTUN', image: 'img/img_bangvattu_6tr/bot-tret-tuong-noi-that-jotun-01-500x500.jpg' },
+                { name: 'Sơn chống thấm Sika', image: 'https://dienmayhoanggiaphat.com.vn/wp-content/uploads/2023/07/son-chong-tham-ngoai-troi-sika-hgp.jpg' },
+                { name: 'Trần thạch cao 9mm chống ấm', image: 'img/img_bangvattu_6tr/kich-thuoc-tran-thach-cao-giat-cap-1.webp' },
+                { name: 'Dây cáp điện CADIVI', image: 'https://codienhaiau.com/wp-content/uploads/2023/01/day-cap-dien-mot-loi-cadivi-cv-vang.jpg' },
+                { name: 'Ống luồn ruột gà', image: 'https://hulatech.vn/wp-content/uploads/2026/08/ong-ruot-ga-sino-vanlock-sp-d16-sp9016cm-7-600x600.webp' },
+                { name: 'Ống nhựa, co, van khóa Bình Minh', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6GjlmBKWTFZmjRbe3WQK9rfbQbt16ls2oNGCOJJveLuZ3Wl0CuN9qdzg&s=10' },
+                { name: 'Ống chịu nhiệt, co, van khóa Bình Minh', image: 'img/img_bangvattu_6tr/catalogue-ong-nhua-ppr-binh-minh.jpg' }
+            ],
+            finishingMaterials: [
+                { name: 'Gạch lát nền phòng khách, sinh hoạt chung, bếp - Gạch granite 60x60', image: 'img/img_bangvattu_6tr/gach-granite-mai-bong-60x60--thach-ban-TGB60-0041_0.jpg' },
+                { name: 'Gạch lát nền phòng ngủ - Gạch granite 60x60', image: 'img/img_bangvattu_6tr/gạch lát nền phòng ngủ.jpg' },
+                { name: 'Gạch lát nền vệ sinh chống trơn - Gạch ceramic 30x30', image: 'img/img_bangvattu_6tr/gạch lát nền nhà vệ sinh.jpg' },
+                { name: 'Gạch ốp tường vệ sinh - Gạch ceramic 30x60', image: 'img/img_bangvattu_6tr/gạch 30x60.jpg' },
+                { name: 'Gạch lát balcon + sân thượng - 40x40 chống trơn', image: 'img/img_bangvattu/gach40x40 gạch lát ban công sân thượng.jpg' },
+                { name: 'Đá lát tam cấp + cầu thang + mặt bếp - Đen Kim Sa, Trắng Nhân tạo', image: 'img/img_bangvattu_6tr/đá kim sa.jpg' },
+                { name: 'Gạch trang trí', image: '', imageText: 'Theo phối cảnh' },
+                { name: 'Cửa đi chính, cửa hậu, cửa balcon, cửa vệ sinh + khóa - Nhôm Xingfa Việt Nam hệ 55 + Khóa tay gạt', image: 'img/img_bangvattu_6tr/cua_nhom_xingfa_2_grande.webp' },
+                { name: 'Cửa đi phòng ngủ + khóa - Nhôm Xingfa Việt Nam hệ 55 + Khóa tay gạt + kính cường lực 8 ly', image: 'img/img_bangvattu/của nhôm xinfa kính mờ.jpg' },
+                { name: 'CB, công tắc, ổ cắm, tủ điện, đế âm, mặt - SINO vanlock', image: 'img/img_bangvattu/sino vanlock.jpg' },
+                { name: 'Đèn trang trí vách - Khách hàng chọn', image: 'img/img_bangvattu_6tr/TD778.jpg' },
+                { name: 'Đèn vách cầu thang - Khách hàng chọn', image: 'img/img_bangvattu_6tr/đèn vách cầu thang.webp' },
+                { name: 'Đèn phòng ngủ - Khách hàng chọn', image: 'img/img_bangvattu_6tr/đèn_phòng_ngủ-removebg-preview.png' },
+                { name: 'Đèn led âm trần, ánh sáng trắng, một chế độ - MPE 9W', image: 'img/img_bangvattu_6tr/den-led-mpe-rpl-9w-am-tran-1090x1090.jpg' },
+                { name: 'Đèn led ốp trần nổi phòng vệ sinh - MPE 18W', image: 'img/img_bangvattu/mpe 18w.webp' },
+                { name: 'Chậu rửa chén - INOX 304', image: 'img/img_bangvattu_6tr/chậu rửa chén.jpg' },
+                { name: 'Vòi rửa nóng lạnh - INOX 304', image: 'img/img_bangvattu_6tr/big_voi-bep-inax-sfv-17_896ebd67a79b4a77a94ef83cfa078a7b_master.webp' },
+                { name: 'Lavabo rửa mặt - Lavabo mặt đá nhân tạo', image: 'img/img_bangvattu_6tr/lavabo rửa mặt.png' },
+                { name: 'Bồn cầu khối', image: 'img/img_bangvattu_6tr/bon-cau-inax-ac-700van-500x500.jpg' },
+                { name: 'Vòi rửa mặt nóng lạnh - INOX 304', image: 'img/img_bangvattu_6tr/vòi rửa mặt.jpg' },
+                { name: 'Vòi sen tắm nóng lạnh - INOX 304', image: 'img/img_bangvattu_6tr/Sen-cay-tam-dung-vuong-inox-304-Royal-sanp-111.png.webp' },
+                { name: 'Gương + kệ kính + móc treo', image: 'img/img_bangvattu_6tr/gương.jpg' },
+                { name: 'Lan can tay vịn - Tay vịn INOX + kính cường lực 10 ly', image: 'img/img_bangvattu_6tr/mau-cau-thang-kinh-cuong-luc-dep-2.jpg' },
+                { name: 'Trụ đề pa', image: '', imageText: 'Không có' },
+                { name: 'Bồn nước Đại Thành 1.000m³ - Không bao gồm tháp bồn nước đặt bên ngoài khối nhà', image: 'img/img_bangvattu/bon-nuoc-inox-304-dai-thanh-500l-ngang-1090x1090.jpg' },
+                { name: 'Máy bơm 1,5HP', image: 'img/img_bangvattu_6tr/may-bom-cao-ap-superwin-0.5hp-2.webp' }
+            ]
+        },
+
+        '6200000-6990000': {
+            name: 'Gói 6,2–6,99 triệu/m²',
+            summary: 'Danh mục vật tư riêng cho gói xây dựng từ 6,2 đến 6,99 triệu/m².',
+            materials: [
+                { name: 'Gạch Tuynel', image: 'https://khatra.com.vn/wp-content/uploads/2020/04/gach-tuynel-gia-re.jpg' },
+                { name: 'Cát vàng Tân Châu, Lòng Hồ', image: 'https://thegioivatlieuxaydung.vn/wp-content/uploads/2023/11/cat-vang-xay-dung.jpeg' },
+                { name: 'Đá xanh Đồng Nai hoặc tương đương', image: 'https://vatlieuxaydungbienhoa.com/wp-content/uploads/2025/10/gi%C3%A1-%C4%91%C3%A1-x%C3%A2y-d%E1%BB%B1ng-1x2-t%E1%BA%A1i-Bi%C3%AAn-H%C3%B2a-%C4%90%E1%BB%93ng-Nai-2.jpg' },
+                { name: 'Xi măng Fico / INSEE / Hà Tiên', image: 'img/img_bangvattu6tr2/thiet-ke-chua-co-ten-5-8990.png' },
+                { name: 'Bê tông tươi M250 R28, Khối lượng lớn và có thể thi công đồng loạt', image: 'https://bizweb.dktcdn.net/100/084/618/products/xe-tron-be-tong-howo-cabin-a7.jpg?v=1464936275450' },
+                { name: 'Bê tông cột, đà trộn bằng cối tại công trình', image: 'https://dienmaythanhloi.vn/uploads/maytronbetong250lit.jpg' },
+                { name: 'Thép tròn, thép hình Pomina', image: 'img/img_bangvattu_6tr/THEP-VAN-POMINA.jpg' },
+                { name: 'Xà gồ thép hộp tráng kẽm 1,4 ly, Li tô 1,2 ly', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTV4-P_JAgG3bUowmxQMbqGuI131DApCiy7TbhbhQRDMm1BN0iLkMU6OPCP&s=10' },
+                { name: 'Tôn lợp - Tôn lạnh màu Nam Kim 4,5 dem', image: 'https://thephinh24h.com/wp-content/uploads/2019/10/roof-and-wall-material-galvanized-corrugated16118475400.jpg' },
+                { name: 'Ngói RUBY / SUNRISE', image: 'img/img_bangvattu6tr2/ngói RA.png' },
+                { name: 'Sơn phủ Juton', image: 'img/img_bangvattu_6tr/essence dễ lau chùi.png' },
+                { name: 'Bột trét cao cấp JOTUN', image: 'img/img_bangvattu_6tr/bot-tret-tuong-noi-that-jotun-01-500x500.jpg' },
+                { name: 'Sơn chống thấm Sika', image: 'https://dienmayhoanggiaphat.com.vn/wp-content/uploads/2023/07/son-chong-tham-ngoai-troi-sika-hgp.jpg' },
+                { name: 'Trần thạch cao 9mm chống ấm', image: 'img/img_bangvattu_6tr/kich-thuoc-tran-thach-cao-giat-cap-1.webp' },
+                { name: 'Dây cáp điện CADIVI', image: 'https://codienhaiau.com/wp-content/uploads/2023/01/day-cap-dien-mot-loi-cadivi-cv-vang.jpg' },
+                { name: 'Ống luồn - ống cứng', image: 'img/img_bangvattu6tr2/ống cứng.jpg' },
+                { name: 'Ống nhựa, co, van khóa Bình Minh', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6GjlmBKWTFZmjRbe3WQK9rfbQbt16ls2oNGCOJJveLuZ3Wl0CuN9qdzg&s=10' },
+                { name: 'Ống chịu nhiệt, co, van khóa Bình Minh', image: 'img/img_bangvattu_6tr/catalogue-ong-nhua-ppr-binh-minh.jpg' }
+            ],
+            finishingMaterials: [
+                { name: 'Gạch lát nền phòng khách, sinh hoạt chung, bếp - Gạch granite 80x80', image: 'img/img_bangvattu6tr2/gạch 80x80.webp' },
+                { name: 'Gạch lát nền phòng ngủ - Gạch granite 80x80', image: 'img/img_bangvattu6tr2/gạch lát nền 80x80.jpg' },
+                { name: 'Gạch lát nền vệ sinh chống trơn - Gạch ceramic 30x60', image: 'img/img_bangvattu6tr2/gạch lát nền 30x60.jpg' },
+                { name: 'Gạch ốp tường vệ sinh - Gạch ceramic 30x60', image: 'img/img_bangvattu6tr2/gạch ốp tường nhà vệ sinh 30x60.jpg' },
+                { name: 'Gạch lát balcon + sân thượng - 40x40 chống trơn', image: 'img/img_bangvattu6tr2/gạch lát ban công.jpg' },
+                { name: 'Đá lát tam cấp + cầu thang + mặt bếp - Đen Kim Sa, Trắng Nhân tạo', image: 'img/img_bangvattu_6tr/đá kim sa.jpg' },
+                { name: 'Gạch trang trí', image: '', imageText: 'Theo phối cảnh' },
+                { name: 'Cửa đi chính, cửa hậu, cửa balcon, cửa vệ sinh + khóa - Nhôm Xingfa Việt Nam hệ 55 + Khóa tay gạt', image: 'img/img_bangvattu6tr2/cửa nhôm xingffa.jpeg' },
+                { name: 'Cửa đi phòng ngủ + khóa - Gỗ căm xe + Khóa tay gạt', image: 'img/img_bangvattu6tr2/cửa gỗ căm xe.webp' },
+                { name: 'CB, công tắc, ổ cắm, tủ điện, đế âm, mặt - SINO vanlock/ MPE', image: 'img/img_bangvattu6tr2/cong-tac-3-sino-s18.jpg' },
+                { name: 'Đèn trang trí vách - Khách hàng chọn', image: 'img/img_bangvattu6tr2/đèn_trang_trí_vách-removebg-preview.png' },
+                { name: 'Đèn vách cầu thang - Khách hàng chọn', image: 'img/img_bangvattu6tr2/đèn vách cầu tháng.jpeg' },
+                { name: 'Đèn phòng ngủ - Khách hàng chọn', image: 'img/img_bangvattu6tr2/đèn phòng ngủ.png' },
+                { name: 'Đèn led âm trần, ánh sáng trắng, một chế độ - MPE 9W', image: 'img/img_bangvattu_6tr/den-led-mpe-rpl-9w-am-tran-1090x1090.jpg' },
+                { name: 'Đèn led ốp trần nổi phòng vệ sinh - MPE 18W', image: 'img/img_bangvattu/mpe 18w.webp' },
+                { name: 'Chậu rửa chén - INOX 304', image: 'img/img_bangvattu_6tr/chậu rửa chén.jpg' },
+                { name: 'Vòi rửa nóng lạnh - INOX 304', image: 'img/img_bangvattu6tr2/vòi rửa nóng lạnh.jpg' },
+                { name: 'Lavabo rửa mặt - Lavabo thùng nhôm + gương', image: 'img/img_bangvattu6tr2/lavabo.png' },
+                { name: 'Bồn cầu khối -  INAX', image: 'img/img_bangvattu6tr2/bồn câu khối.jpg' },
+                { name: 'Vòi rửa mặt nóng lạnh - KASSANI', image: 'img/img_bangvattu6tr2/vòi rửa mặt.jpg' },
+                { name: 'Vòi sen tắm nóng lạnh - KASSANI', image: 'img/img_bangvattu6tr2/vòi sen tắm.png' },
+                { name: 'Gương + kệ kính + móc treo', imageText: 'Đã bao gồm' },
+                { name: 'Lan can tay vịn - Tay vịn gỗ Căm xe 5x5cm hoặc tay vịn nhôm + kính cường lực 10 ly', image: 'img/img_bangvattu6tr2/cầu thang tay vịn.png' },
+                { name: 'Trụ đề pa - Căm xe', image: 'img/img_bangvattu6tr2/căm xe.png', imageText: '' },
+                { name: 'Bồn nước Đại Thành 1.500m³ - Không bao gồm tháp bồn nước đặt bên ngoài khối nhà', image: 'img/img_bangvattu/bon-nuoc-inox-304-dai-thanh-500l-ngang-1090x1090.jpg' },
+                { name: 'Máy bơm 1,5HP', image: 'img/img_bangvattu_6tr/may-bom-cao-ap-superwin-0.5hp-2.webp' }
+            ]
+        },
+        '6200000': {
+            name: 'Gói Khá',
+            summary: 'Nâng cấp vật liệu và chi tiết hoàn thiện để căn nhà trông hiện đại, ấm cúng hơn.',
+            image: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=80',
+            materials: [
+                'Bê tông cốt thép đạt tiêu chuẩn cao hơn, gia cường thêm cột và dầm',
+                'Gạch porcelain, gạch men cao cấp cho sàn và tường',
+                'Sàn nhà có thể dùng gạch 60x60, 80x80 và vật liệu nâng cấp',
+                'Mái ngói hoặc BTCT hoàn thiện đẹp, chống thấm tốt',
+                'Cửa gỗ sồi, cửa nhôm kính cao cấp, phụ kiện hệ thống',
+                'Vật liệu ốp tường, ốp gỗ, ốp đá trang trí',
+                'Thiết bị vệ sinh nước nóng, bồn rửa, bàn cầu cao cấp',
+                'Hệ thống điện, điều hòa, chiếu sáng cao cấp hơn'
+            ],
+            finishingMaterials: finishingMaterialsTemplate
+        },
+        '7000000': {
+            name: 'Gói Cao cấp - từ 7 triệu/m²',
+            summary: 'Danh mục vật tư phần thô và hoàn thiện cho gói Cao cấp từ 7 triệu/m² trở lên.',
+            image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80',
+            materials: [
+                { name: 'Gạch Tuynel', image: 'https://khatra.com.vn/wp-content/uploads/2020/04/gach-tuynel-gia-re.jpg' },
+                { name: 'Cát vàng Tân Châu, Lòng Hồ', image: 'https://thegioivatlieuxaydung.vn/wp-content/uploads/2023/11/cat-vang-xay-dung.jpeg' },
+                { name: 'Đá xanh Đồng Nai hoặc tương đương', image: 'https://vatlieuxaydungbienhoa.com/wp-content/uploads/2025/10/gi%C3%A1-%C4%91%C3%A1-x%C3%A2y-d%E1%BB%B1ng-1x2-t%E1%BA%A1i-Bi%C3%AAn-H%C3%B2a-Đồng-Nai-2.jpg' },
+                { name: 'Xi măng Fico / INSEE / Hà Tiên', image: 'img/img_bangvattu6tr2/thiet-ke-chua-co-ten-5-8990.png' },
+                { name: 'Bê tông tươi M250 R28, Khối lượng lớn và có thể thi công đồng loạt', image: 'https://bizweb.dktcdn.net/100/084/618/products/xe-tron-be-tong-howo-cabin-a7.jpg?v=1464936275450' },
+                { name: 'Bê tông cột, đà trộn bằng cối tại công trình', image: 'https://dienmaythanhloi.vn/uploads/maytronbetong250lit.jpg' },
+                { name: 'Thép tròn, thép hình Việt Nhật', image: 'img/img_bangvattu7tr/thep-viet-nhat.jpg' },
+                { name: 'Xà gồ thép hộp tráng kẽm dày 1,4 ly, li tô dày 1,2 ly', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTV4-P_JAgG3bUowmxQMbqGuI131DApCiy7TbhbhQRDMm1BN0iLkMU6OPCP&s=10' },
+                { name: 'Tôn lạnh màu Nam Kim dày 5 dem', image: 'https://thephinh24h.com/wp-content/uploads/2019/10/roof-and-wall-material-galvanized-corrugated16118475400.jpg' },
+                { name: 'Ngói RUBY / SUNRISE', image: 'img/img_bangvattu6tr2/ngói RA.png' },
+                { name: 'Sơn phủ JUTON', image: 'img/img_bangvattu7tr/sơn_jotun-removebg-preview.png' },
+                { name: 'Bột trét cao cấp JOTUN', image: 'img/img_bangvattu7tr/sonw jotun nội & ngoại thất.jpg' },
+                { name: 'Sơn chống thấm thương hiệu SIKA', image: 'https://dienmayhoanggiaphat.com.vn/wp-content/uploads/2023/07/son-chong-tham-ngoai-troi-sika-hgp.jpg' },
+                { name: 'Trần thạch cao dày 9mm chống ẩm', image: 'img/img_bangvattu7tr/trần thạch cao.jpg' },
+                { name: 'Dây cáp điện CADIVI, tiết diện dây theo thiết kế', image: 'https://codienhaiau.com/wp-content/uploads/2023/01/day-cap-dien-mot-loi-cadivi-cv-vang.jpg' },
+                { name: 'Ống luồn - Ống cứng', image: 'img/img_bangvattu6tr2/ống cứng.jpg' },
+                { name: 'Ống nhựa, co, van khóa - PPR cấp nước lạnh', image: 'img/img_bangvattu7tr/ong-nhua-binh-minh-pho-75.png' },
+                { name: 'Ống chịu nhiệt, co, van khóa', image: 'img/img_bangvattu_6tr/catalogue-ong-nhua-ppr-binh-minh.jpg' }
+            ],
+            finishingMaterials: [
+                { name: 'Gạch lát nền phòng khách, sinh hoạt chung, bếp - Gạch granite 80x80', image: 'img/img_bangvattu7tr/gạch 80xx80.jpg' },
+                { name: 'Gạch lát nền phòng ngủ - Gạch 15x80 giả gỗ', image: 'img/img_bangvattu7tr/gạck 15x80.jpg' },
+                { name: 'Gạch lát nền vệ sinh chống trơn - Gạch granite 30x60', image: 'img/img_bangvattu7tr/gach-op-granite-300x600-Thach-Ban-TGB36-0232-removebg-preview.png' },
+                { name: 'Gạch ốp tường vệ sinh 30x60', image: 'img/img_bangvattu7tr/gạch ốp  tường nvs 30x60.png' },
+                { name: 'Gạch lát ban công + sân thượng 40x40 chống trơn', image: 'img/img_bangvattu7tr/gạch lát ban công.jpeg' },
+                { name: 'Đá lát tam cấp + cầu thang + mặt bếp - Đá đen, đỏ Ấn Độ, vàng Ai Cập', image: 'img/img_bangvattu7tr/da-do-ruby1_thumb.jpg' },
+                { name: 'Gạch trang trí theo phối cảnh', image: '', imageText: 'Theo phối cảnh' },
+                { name: 'Cửa đi chính, cửa hậu, cửa ban công, cửa vệ sinh + khóa - Nhôm Xingfa nhập khẩu hệ 55 + khóa tay gạt', image: 'img/img_bangvattu7tr/cửa nhôm xinfa.jpg' },
+                { name: 'Cửa đi phòng ngủ + khóa - Gỗ Gõ Đỏ + khóa tay gạt ', image: 'img/img_bangvattu7tr/cua-go-phong-ngu-tu-go-lim.jpg' },
+                { name: 'CB, công tắc, ổ cắm, tủ điện, đế âm, mặt - Panasonic', image: 'img/img_bangvattu7tr/cong-tac-dien-loai-nao-tot-nhat.jpg' },
+                { name: 'Đèn trang trí vách - Theo thiết kế', image: 'img/img_bangvattu7tr/đèn_vách-removebg-preview.png' },
+                { name: 'Đèn vách cầu thang - Theo thiết kế', image: 'img/img_bangvattu7tr/đèn cầu thang.jpeg' },
+                { name: 'Đèn phòng ngủ - Theo thiết kế', image: 'img/img_bangvattu7tr/đèn_ngủ-removebg-preview.png' },
+                { name: 'Đèn led âm trần - Panasonic 9W', image: 'img/img_bangvattu7tr/đèn panasonic.png' },
+                { name: 'Đèn led ốp trần nổi phòng vệ sinh - Panasonic 18W', image: 'img/img_bangvattu7tr/đèn 18w panasonic.jpg' },
+                { name: 'Chậu rửa chén - Đá nhân tạo', image: 'img/img_bangvattu7tr/bồn rửa chén.jpg' },
+                { name: 'Vòi rửa nóng lạnh INOX 304', image: 'img/img_bangvattu7tr/vòi rửa nóng lạnh.jpg' },
+                { name: 'Lavabo kệ đá 2 tầng + gương LED', image: 'img/img_bangvattu7tr/lavabo rửa mặt.jpg' },
+                { name: 'Bồn cầu khối - INAX', image: 'img/img_bangvattu6tr2/bồn câu khối.jpg' },
+                { name: 'Vòi rửa mặt nóng lạnh INAX', image: 'img/img_bangvattu7tr/vòi rửa mặt nóng lạnh.webp' },
+                { name: 'Vòi sen tắm nóng lạnh', image: 'img/img_bangvattu7tr/vòi sen tắm nóng lạnh.webp' },
+                { name: 'Gương + kệ kính + móc treo', image: 'img/img_bangvattu_6tr/gương.jpg' },
+                { name: 'Lan can + tay vịn gỗ Gõ Đỏ 7x7cm hoặc 6x8cm, trụ tiện hoặc sắt uốn nghệ thuật', image: 'img/img_bangvattu7tr/lan can tay vịn.png' },
+                { name: 'Trụ đề pa Gõ Đỏ (Bên)', image: 'img/img_bangvattu7tr/trụ đề ba.jpg' },
+                { name: 'Bồn nước Đại Thành 1.500m³ - Không bao gồm tháp bồn nước đặt bên ngoài khối nhà', image: 'img/img_bangvattu/bon-nuoc-inox-304-dai-thanh-500l-ngang-1090x1090.jpg' },
+                { name: 'Máy bơm Panasonic 1,5HP', image: 'img/img_bangvattu7tr/máy bơm.jpg' }
+            ],
+        },
+        custom: {
+            name: 'Gói Giá khác',
+            summary: 'Gói tùy chỉnh theo yêu cầu riêng, áp dụng đơn giá do khách hàng đặt ra.',
+            image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=900&q=80',
+            materials: [
+                'Vật liệu kết cấu theo yêu cầu từng hạng mục riêng',
+                'Thép, bê tông, cát, đá, xi măng theo đơn vị tính riêng',
+                'Gạch ốp lát, sơn, phụ kiện, bảng điện và đường ống theo yêu cầu',
+                'Cửa, kính, inox, phụ kiện hoàn thiện tùy chỉnh',
+                'Ốp tường, ốp đá, gỗ, vật liệu décor theo mẫu riêng',
+                'Thiết bị vệ sinh, công tắc, ổ cắm, đèn và phụ kiện theo khách hàng',
+                'Tùy chọn tăng giảm vật tư theo tiến độ và ngân sách',
+                'Tham khảo bảng giá chi tiết trước khi chốt thi công'
+            ],
+            finishingMaterials: finishingMaterialsTemplate
+        }
+    };
+    let hasCalculatedPackage = false;
+    const resolvePackageKeyForPreview = () => {
+        const finishValue = estimateForm?.elements.finish?.value || '';
+        const customPriceRaw = String(estimateForm?.elements.customFinishPrice?.value || '').replace(/\D/g, '');
+        const customPriceValue = customPriceRaw ? Number(customPriceRaw) : NaN;
+
+        if (finishValue === '5700000') {
+            return '5700000';
+        }
+
+        if (finishValue === '6000000' || (finishValue === 'custom' && Number.isFinite(customPriceValue) && customPriceValue >= 6000000 && customPriceValue <= 6199000)) {
+            return '6000000-6199000';
+        }
+
+        if (finishValue === '6200000' || (finishValue === 'custom' && Number.isFinite(customPriceValue) && customPriceValue >= 6200000 && customPriceValue <= 6990000)) {
+            return '6200000-6990000';
+        }
+
+        if (finishValue === '7000000' || (finishValue === 'custom' && Number.isFinite(customPriceValue) && customPriceValue >= 7000000)) {
+            return '7000000';
+        }
+
+        if (finishValue === 'custom' && Number.isFinite(customPriceValue) && customPriceValue > 0 && customPriceValue < 6000000) {
+            return '5700000';
+        }
+
+        return null;
+    };
+    const updatePackagePreview = () => {
+        const selectedPackage = resolvePackageKeyForPreview();
+        const packageData = selectedPackage && packageDetails[selectedPackage] ? packageDetails[selectedPackage] : null;
+        if (!packagePreview || !packageList || !packageTableWrap) {
+            return;
+        }
+        if (!hasCalculatedPackage || !packageData) {
+            packagePreview.hidden = true;
+            packageTableWrap.hidden = true;
+            if (packageNotes) {
+                packageNotes.hidden = true;
+            }
+            packageList.innerHTML = '';
+            return;
+        }
+        const getMaterialImage = (name) => {
+            const normalizedName = name.toLowerCase();
+            if (normalizedName.includes('thép') || normalizedName.includes('dầm') || normalizedName.includes('cột')) {
+                return 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80';
+            }
+            if (normalizedName.includes('gạch') || normalizedName.includes('ốp')) {
+                return 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=80';
+            }
+            if (normalizedName.includes('sơn')) {
+                return 'https://images.unsplash.com/photo-1581092921461-eab62e97a6a7?auto=format&fit=crop&w=900&q=80';
+            }
+            if (normalizedName.includes('mái') || normalizedName.includes('ngói')) {
+                return 'https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=900&q=80';
+            }
+            if (normalizedName.includes('cửa')) {
+                return 'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=900&q=80';
+            }
+            if (normalizedName.includes('ống') || normalizedName.includes('nước') || normalizedName.includes('bồn') || normalizedName.includes('lavabo')) {
+                return 'https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=900&q=80';
+            }
+            if (normalizedName.includes('trần') || normalizedName.includes('thạch')) {
+                return 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80';
+            }
+            return 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80';
+        };
+        const sections = [
+            { title: 'Phần thô', items: packageData.materials || [] },
+            { title: 'Phần hoàn thiện', items: packageData.finishingMaterials || [] }
+        ];
+
+        const rowsHtml = sections.flatMap((section) => {
+            const items = section.items || [];
+            if (!items.length) {
+                return [];
+            }
+            const sectionRows = [];
+            if (section.title) {
+                sectionRows.push(`
+                    <tr class="estimate-package-section-row">
+                        <td colspan="3">${section.title}</td>
+                    </tr>
+                `);
+            }
+            items.forEach((item, index) => {
+                const material = typeof item === 'string' ? { name: item, image: getMaterialImage(item) } : item;
+                const materialImage = material.image || (material.imageText ? '' : getMaterialImage(material.name || 'vật liệu'));
+                const materialVisual = materialImage
+                    ? `<img src="${materialImage}" alt="${material.name}" loading="lazy">`
+                    : `<span class="estimate-package-thumb-note">${material.imageText || 'Không có hình ảnh'}</span>`;
+                sectionRows.push(`
+                    <tr class="estimate-package-item">
+                        <td class="estimate-package-index">${index + 1}</td>
+                        <td class="estimate-package-name"><span title="${material.name}">${material.name}</span></td>
+                        <td class="estimate-package-thumb">
+                            ${materialVisual}
+                        </td>
+                    </tr>
+                `);
+            });
+            return sectionRows;
+        }).join('');
+
+        packageList.innerHTML = rowsHtml;
+        packageList.querySelectorAll('.estimate-package-item').forEach((row, index) => {
+            row.classList.toggle('estimate-package-item--uniform-image', index < 3);
+        });
+        packagePreview.hidden = false;
+        packageTableWrap.hidden = false;
+        if (packageNotes) {
+            packageNotes.hidden = false;
+        }
+    };
     const fengShuiForm = document.querySelector('#feng-shui-form');
     const compassFace = document.querySelector('#compass-face');
     const compassNeedle = document.querySelector('#compass-needle');
@@ -601,7 +1497,11 @@ document.addEventListener('DOMContentLoaded', () => {
             updateExtraAreaDisplay();
         });
         foundationField.addEventListener('change', updateEstimateOptions);
-        finishField.addEventListener('change', updateCustomPriceState);
+        finishField.addEventListener('change', () => {
+            updateCustomPriceState();
+            hasCalculatedPackage = false;
+            updatePackagePreview();
+        });
         customFinishInput?.addEventListener('focus', () => {
             customPriceDigitsBuffer = String(customFinishInput.value || '').replace(/\D/g, '');
             customFinishInput.value = customPriceDigitsBuffer;
@@ -636,6 +1536,8 @@ document.addEventListener('DOMContentLoaded', () => {
             customPriceDigitsBuffer = '';
             updateCustomPriceState();
             updateExtraAreaDisplay();
+            hasCalculatedPackage = false;
+            updatePackagePreview();
             updateEstimateOptions();
         });
         estimateForm.addEventListener('submit', (event) => {
@@ -659,6 +1561,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const extraArea = includeExtra ? getAdditionalArea() : 0;
 
             if (![length, width, floors, roofRate, foundationRate, unitPrice].every(Number.isFinite) || floors <= 0 || !style) {
+                hasCalculatedPackage = false;
+                updatePackagePreview();
                 estimateTotal.textContent = '--';
                 estimateArea.textContent = 'Vui lòng điền và chọn đầy đủ thông tin để tính, không cần tải lại trang.';
                 estimateFloorDetail.textContent = '--';
@@ -688,6 +1592,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             estimateFloorArea.textContent = `${formatArea(convertedArea)} m²`;
             estimateUnitPrice.textContent = `${formatNumber(unitPrice)} đ/m²`;
+            hasCalculatedPackage = true;
+            updatePackagePreview();
         });
     }
 
@@ -774,11 +1680,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (productCards.length > 0 && pagination) {
-        const productsPerPage = 9;
+        const productsPerPage = 12;
         let activeFilter = 'all';
         let currentProductPage = 1;
 
         const getProductPrice = (card) => Number((card.querySelector('.price')?.textContent || '').replace(/[^\d]/g, ''));
+        const getTileArea = (card) => {
+            const [width, height] = (card.dataset.tileSize || '').split('x').map(Number);
+            return width * height;
+        };
         const getProductText = (card) => card.textContent.toLowerCase();
         const typeMatches = (card, type) => {
             if (type === 'all') return true;
@@ -789,11 +1699,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (type === 'slab') return text.includes('slab');
             return /chống trơn|ngoài trời|sân vườn|ban công/.test(text);
         };
-
-        document.querySelectorAll('.product-card[data-tile-size] img').forEach((image) => {
-            image.src = 'img/gach.png';
-            image.alt = `${image.alt} - ảnh minh họa gạch`;
-        });
 
         const getVisibleProducts = () => productCards.filter((card) => {
             const price = getProductPrice(card);
@@ -814,9 +1719,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const visibleProducts = getVisibleProducts().sort((first, second) => {
                 if (materialSort?.value === 'price-asc') return getProductPrice(first) - getProductPrice(second);
                 if (materialSort?.value === 'price-desc') return getProductPrice(second) - getProductPrice(first);
-                if (materialSort?.value === 'size-asc') return (first.dataset.tileSize || '').localeCompare(second.dataset.tileSize || '', undefined, { numeric: true });
+                if (materialSort?.value === 'size-asc') return getTileArea(first) - getTileArea(second);
+                if (materialSort?.value === 'size-desc') return getTileArea(second) - getTileArea(first);
                 return productCards.indexOf(first) - productCards.indexOf(second);
             });
+            const productGrid = productCards[0].parentElement;
+            if (productGrid) {
+                visibleProducts.forEach((card) => productGrid.appendChild(card));
+                productCards.filter((card) => !visibleProducts.includes(card)).forEach((card) => productGrid.appendChild(card));
+            }
             const pageCount = Math.max(1, Math.ceil(visibleProducts.length / productsPerPage));
             currentProductPage = Math.min(currentProductPage, pageCount);
 
@@ -839,7 +1750,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 pageButton.addEventListener('click', () => {
                     currentProductPage = page;
                     renderCatalog();
-                    document.querySelector('.catalog-intro')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const catalogToolbar = document.querySelector('.catalog-toolbar');
+                    if (catalogToolbar) {
+                        const scrollTop = window.scrollY
+                            + catalogToolbar.getBoundingClientRect().top
+                            - Number.parseFloat(window.getComputedStyle(catalogToolbar).scrollMarginTop);
+                        smoothScrollTo(scrollTop);
+                    }
                 });
                 pagination.appendChild(pageButton);
             }
@@ -861,6 +1778,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         materialApply?.addEventListener('click', applyCatalogFilters);
+        materialSort?.addEventListener('change', applyCatalogFilters);
         materialSearch?.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -888,7 +1806,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let activeCategory = 'all';
         let currentPage = 1;
 
-        const getInteriorPrice = (card) => Number((card.querySelector('.price')?.textContent || '').replace(/[^\d]/g, ''));
+        const getInteriorPrice = (card) => Number(card.dataset.interiorPrice);
         const getInteriorText = (card) => card.textContent.toLowerCase();
 
         const renderInteriorCatalog = () => {
@@ -897,17 +1815,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const visibleProducts = interiorCards.filter((card) => {
                 const price = getInteriorPrice(card);
                 const matchesPrice = priceFilter === 'all'
-                    || (priceFilter === 'budget' && price < 5000000)
-                    || (priceFilter === 'standard' && price >= 5000000 && price <= 15000000)
-                    || (priceFilter === 'premium' && price > 15000000);
+                    || (priceFilter === 'budget' && price < 50000000)
+                    || (priceFilter === 'standard' && price >= 50000000 && price <= 150000000)
+                    || (priceFilter === 'premium' && price > 150000000);
                 return (activeCategory === 'all' || card.dataset.interiorCategory === activeCategory)
                     && (!interiorType || interiorType.value === 'all' || card.dataset.interiorCategory === interiorType.value)
                     && matchesPrice
                     && (!search || getInteriorText(card).includes(search));
-            }).sort((first, second) => {
-                if (interiorSort?.value === 'price-asc') return getInteriorPrice(first) - getInteriorPrice(second);
-                if (interiorSort?.value === 'price-desc') return getInteriorPrice(second) - getInteriorPrice(first);
-                if (interiorSort?.value === 'name-asc') return (first.querySelector('h3')?.textContent || '').localeCompare(second.querySelector('h3')?.textContent || '', 'vi');
+            });
+            const sortMode = interiorSort?.value || 'default';
+            visibleProducts.sort((first, second) => {
+                if (sortMode === 'price-asc') return getInteriorPrice(first) - getInteriorPrice(second);
+                if (sortMode === 'price-desc') return getInteriorPrice(second) - getInteriorPrice(first);
+                if (sortMode === 'name-asc') {
+                    return (first.querySelector('h3')?.textContent || '').localeCompare(second.querySelector('h3')?.textContent || '', 'vi');
+                }
                 return interiorCards.indexOf(first) - interiorCards.indexOf(second);
             });
             const pageCount = Math.max(1, Math.ceil(visibleProducts.length / productsPerPage));
@@ -916,9 +1838,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (interiorCount) interiorCount.textContent = visibleProducts.length;
             if (interiorEmpty) interiorEmpty.hidden = visibleProducts.length > 0;
 
-            interiorCards.forEach((card) => card.classList.add('is-hidden'));
             const start = (currentPage - 1) * productsPerPage;
-            visibleProducts.slice(start, start + productsPerPage).forEach((card) => card.classList.remove('is-hidden'));
+            const pageProducts = visibleProducts.slice(start, start + productsPerPage);
+            interiorProductGrid.append(...pageProducts, ...interiorCards.filter((card) => !pageProducts.includes(card)));
+            interiorCards.forEach((card) => card.classList.add('is-hidden'));
+            pageProducts.forEach((card) => card.classList.remove('is-hidden'));
 
             interiorPagination.innerHTML = '';
             for (let page = 1; page <= pageCount; page += 1) {
@@ -930,7 +1854,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.addEventListener('click', () => {
                     currentPage = page;
                     renderInteriorCatalog();
-                    document.querySelector('.interior-filters')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const interiorToolbar = document.querySelector('.catalog-toolbar[aria-label="Bộ lọc nội thất"]');
+                    if (interiorToolbar) {
+                        const scrollTop = window.scrollY
+                            + interiorToolbar.getBoundingClientRect().top
+                            - Number.parseFloat(window.getComputedStyle(interiorToolbar).scrollMarginTop);
+                        smoothScrollTo(scrollTop);
+                    }
                 });
                 interiorPagination.appendChild(button);
             }
@@ -986,6 +1916,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     document.querySelectorAll('.card img:not(.map-link img):not(.activity-card img), .hero-slide img, .page-header img').forEach((image) => {
+        if (image.closest('.materials-page .card, .interior-page .card')) return;
         image.addEventListener('click', () => openLightbox(image));
     });
 
@@ -1187,14 +2118,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (mobileMenu && navList) {
+        const mobileNav = navList.closest('nav');
+        const mobileNavClose = document.createElement('button');
+        mobileNavClose.className = 'mobile-nav-close';
+        mobileNavClose.type = 'button';
+        mobileNavClose.setAttribute('aria-label', 'Đóng menu');
+        mobileNavClose.innerHTML = '&times;';
+        mobileNav?.appendChild(mobileNavClose);
+
         mobileMenu.setAttribute('role', 'button');
         mobileMenu.setAttribute('tabindex', '0');
         mobileMenu.setAttribute('aria-expanded', 'false');
 
-        const toggleMobileMenu = () => {
-            const isOpen = navList.classList.toggle('active');
+        const setMobileMenu = (isOpen) => {
+            navList.classList.toggle('active', isOpen);
             mobileMenu.setAttribute('aria-expanded', String(isOpen));
             document.body.style.overflow = isOpen ? 'hidden' : '';
+        };
+
+        const toggleMobileMenu = () => {
+            setMobileMenu(!navList.classList.contains('active'));
         };
 
         mobileMenu.addEventListener('click', () => {
@@ -1208,11 +2151,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        mobileNavClose.addEventListener('click', () => {
+            setMobileMenu(false);
+            mobileMenu.focus();
+        });
+
         navList.querySelectorAll('a').forEach((link) => {
             link.addEventListener('click', () => {
-                navList.classList.remove('active');
-                mobileMenu.setAttribute('aria-expanded', 'false');
-                document.body.style.overflow = '';
+                setMobileMenu(false);
             });
         });
     }
