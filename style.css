@@ -5610,6 +5610,32 @@ header {
     background: rgba(255,255,255,0.8);
 }
 
+.contact-form input,
+.contact-form select,
+.contact-form textarea,
+.estimate-grid input,
+.estimate-grid select {
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+.contact-form input:placeholder-shown,
+.contact-form textarea:placeholder-shown,
+.contact-form select:invalid,
+.estimate-grid input:placeholder-shown,
+.estimate-grid select:invalid {
+    color: rgba(24, 24, 24, 0.42);
+    font-weight: 400;
+}
+
+.contact-form input::placeholder,
+.contact-form textarea::placeholder,
+.estimate-grid input::placeholder {
+    color: rgba(24, 24, 24, 0.42);
+    font-weight: 400;
+    opacity: 1;
+}
+
 .contact-form input:focus,
 .contact-form select:focus,
 .contact-form textarea:focus {
