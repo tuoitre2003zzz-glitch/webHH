@@ -235,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             params.set('gia-tu', card.querySelector('.price')?.textContent.trim().startsWith('Từ ') ? '1' : '0');
         }
+        params.set('v', '20261005-site');
 
         return `chi-tiet-san-pham.html?${params.toString()}`;
     };
