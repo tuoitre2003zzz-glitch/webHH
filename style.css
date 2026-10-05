@@ -8080,3 +8080,59 @@ main .activity-card img {
         line-height: 18px;
     }
 }
+
+@media screen and (max-width: 600px) {
+    .site-footer {
+        padding: 36px 18px 22px;
+    }
+
+    .footer-inner {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px 18px;
+    }
+
+    .footer-brand {
+        grid-column: 1 / -1;
+    }
+
+    .footer-brand p {
+        max-width: none;
+        margin-bottom: 14px;
+        line-height: 1.65;
+        text-align: justify;
+    }
+
+    .footer-brand h3,
+    .footer-column h4 {
+        margin-bottom: 12px;
+        font-size: 18px;
+    }
+
+    .footer-list {
+        gap: 8px;
+    }
+
+    .footer-list li {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .footer-column:last-child {
+        grid-column: 1 / -1;
+    }
+
+    .footer-column:last-child .footer-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 18px;
+    }
+
+    .footer-bottom {
+        margin-top: 22px;
+        padding-top: 14px;
+    }
+
+    .footer-bottom p {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+}
