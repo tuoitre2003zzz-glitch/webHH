@@ -116,6 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const materialSummary = document.querySelector('#material-summary');
     const materialEmpty = document.querySelector('#material-empty');
     const interiorProductGrid = document.querySelector('#interior-product-grid');
+    const getAlignedPageSize = (grid, preferredSize) => {
+        const columns = Math.max(1, getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length);
+        return Math.ceil(preferredSize / columns) * columns;
+    };
     if (interiorProductGrid) {
         const interiorProducts = [
             ['living-room', 'Phòng khách · Ghế thư giãn', 'Ghế thư giãn lưng gỗ', 'UPH-425V-134-A', 132760000, true, '21691/uph-425v-134-a_main-600x600-bc87582.jpg', 'living-room-5/chairs-2/fleur-wood-back-lounge-chair'],
@@ -1685,7 +1689,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (productCards.length > 0 && pagination) {
-        const productsPerPage = 12;
+        const productGrid = productCards[0].parentElement;
+        let productsPerPage = getAlignedPageSize(productGrid, 12);
         let activeFilter = 'all';
         let currentProductPage = 1;
 
@@ -1728,7 +1733,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (materialSort?.value === 'size-desc') return getTileArea(second) - getTileArea(first);
                 return productCards.indexOf(first) - productCards.indexOf(second);
             });
-            const productGrid = productCards[0].parentElement;
             if (productGrid) {
                 visibleProducts.forEach((card) => productGrid.appendChild(card));
                 productCards.filter((card) => !visibleProducts.includes(card)).forEach((card) => productGrid.appendChild(card));
@@ -1804,10 +1808,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         renderCatalog();
+        window.addEventListener('resize', () => {
+            const nextPageSize = getAlignedPageSize(productGrid, 12);
+            if (nextPageSize === productsPerPage) return;
+            productsPerPage = nextPageSize;
+            currentProductPage = 1;
+            renderCatalog();
+        });
     }
 
     if (interiorCards.length > 0 && interiorPagination) {
-        const productsPerPage = 9;
+        let productsPerPage = getAlignedPageSize(interiorProductGrid, 9);
         let activeCategory = 'all';
         let currentPage = 1;
 
@@ -1898,6 +1909,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         renderInteriorCatalog();
+        window.addEventListener('resize', () => {
+            const nextPageSize = getAlignedPageSize(interiorProductGrid, 9);
+            if (nextPageSize === productsPerPage) return;
+            productsPerPage = nextPageSize;
+            currentPage = 1;
+            renderInteriorCatalog();
+        });
     }
 
     const lightbox = document.createElement('div');
