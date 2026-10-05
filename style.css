@@ -7145,6 +7145,10 @@ header {
         line-height: 1.55;
     }
 
+    .about-page .about-feature-band .about-section-heading > p {
+        color: var(--muted-color);
+    }
+
     .about-page .about-services-inner {
         padding-top: 56px;
         padding-bottom: 58px;
