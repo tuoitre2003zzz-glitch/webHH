@@ -5708,8 +5708,8 @@ header {
     max-width: 1240px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1.7fr 1fr 1fr 1fr;
-    gap: 28px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 24px;
 }
 
 .footer-brand h3,
@@ -5724,7 +5724,8 @@ header {
     color: rgba(255,255,255,0.72);
     line-height: 1.8;
     margin-bottom: 18px;
-    max-width: 420px;
+    text-align: justify;
+    text-justify: inter-word;
 }
 
 .footer-contact,
