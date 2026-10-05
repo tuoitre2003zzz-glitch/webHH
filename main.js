@@ -282,6 +282,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!value || value.startsWith('/') || value.includes('\\') || /(^|\/)\.\.(\/|$)/.test(value)) return false;
             try {
                 const imageUrl = new URL(value, document.baseURI);
+                if (imageUrl.origin === window.location.origin) {
+                    const siteRoot = new URL('.', document.baseURI).pathname;
+                    return imageUrl.pathname.startsWith(siteRoot);
+                }
                 if (imageUrl.protocol === 'https:') {
                     if (imageUrl.hostname === 'cdchomedesigncenter.com') {
                         return imageUrl.pathname.startsWith('/Data/Sites/1/Product/');
