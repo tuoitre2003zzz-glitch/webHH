@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liên Hệ | Hoàng Hải Luxury</title>
-    <link rel="stylesheet" href="style.css?v=20261005-mobile">
+    <link rel="stylesheet" href="style.css?v=20261005-contact-form">
     <style>
 
     </style>
@@ -35,6 +35,32 @@
 
     <section class="section">
         <div class="contact-layout">
+            <form class="contact-form" id="contact-form" action="https://formsubmit.co/pndat171203@gmail.com" method="POST">
+                <div class="contact-form-heading">
+                    <h2>Hãy chia sẻ nhu cầu của bạn</h2>
+                    <p>Chọn hạng mục cần tư vấn và để lại thông tin. Hoàng Hải sẽ liên hệ để cùng bạn tìm giải pháp phù hợp.</p>
+                </div>
+                <input type="hidden" name="_subject" value="Yêu cầu tư vấn mới từ website Hoàng Hải Luxury">
+                <input type="hidden" name="_template" value="table">
+                <input type="hidden" name="_captcha" value="false">
+                <label for="contact-name">Họ và tên</label>
+                <input id="contact-name" type="text" name="Họ và tên" placeholder="Ví dụ: Nguyễn Văn An" minlength="2" maxlength="60" pattern="[A-Za-zÀ-ỹĐđ]+(?:[ '\-][A-Za-zÀ-ỹĐđ]+)+" title="Tên chưa hợp lệ. Ví dụ: Nguyễn Văn An." autocomplete="name" required>
+                <label for="contact-phone">Số điện thoại</label>
+                <input id="contact-phone" type="tel" name="Số điện thoại" placeholder="Số điện thoại để chúng tôi liên hệ" inputmode="numeric" minlength="10" maxlength="10" pattern="(03[2-9]|05[2568]|07[06789]|08[156789]|09[0-9])[0-9]{7}" title="Nhập số di động Việt Nam hợp lệ gồm 10 số, ví dụ 0912345678." autocomplete="tel" required>
+                <label for="contact-service">Bạn cần tư vấn về</label>
+                <select id="contact-service" name="Dịch vụ quan tâm" required>
+                    <option value="">Chọn hạng mục bạn quan tâm</option>
+                    <option value="Tư vấn xây nhà trọn gói">Xây nhà trọn gói</option>
+                    <option value="Tư vấn vật liệu xây dựng">Vật liệu xây dựng</option>
+                    <option value="Tư vấn Thiết kế Nội thất">Thiết kế nội thất</option>
+                    <option value="Tư vấn Khu vui chơi giải trí">Khu vui chơi giải trí</option>
+                </select>
+                <label for="contact-message">Thông tin bạn muốn chia sẻ <span>(không bắt buộc)</span></label>
+                <textarea id="contact-message" name="Nội dung yêu cầu" rows="5" placeholder="Ví dụ: diện tích, quy mô dự kiến hoặc sản phẩm bạn đang quan tâm..."></textarea>
+                <button type="submit">Gửi Yêu Cầu</button>
+                <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+            </form>
+
             <div class="contact-info">
                 <div class="contact-item">
                     <h3>Thông tin liên hệ</h3>
@@ -54,26 +80,6 @@
                     <p>Chúng tôi hỗ trợ báo giá, tư vấn thiết kế, nhập hàng vật liệu và giải đáp các yêu cầu chuyên môn trong thời gian ngắn nhất.</p>
                 </div>
             </div>
-
-            <form class="contact-form" id="contact-form" action="https://formsubmit.co/pndat171203@gmail.com" method="POST">
-                <input type="hidden" name="_subject" value="Yêu cầu tư vấn mới từ website Hoàng Hải Luxury">
-                <input type="hidden" name="_template" value="table">
-                <input type="hidden" name="_captcha" value="false">
-                <input type="text" name="Họ và tên" placeholder="Họ và tên của bạn" minlength="2" maxlength="60" pattern="[A-Za-zÀ-ỹĐđ]+(?:[ '\-][A-Za-zÀ-ỹĐđ]+)+" title="Tên chưa hợp lệ. Ví dụ: Nguyễn Văn A..." autocomplete="name" required>
-                <input type="tel" name="Số điện thoại" placeholder="Số điện thoại" inputmode="numeric" minlength="10" maxlength="10" pattern="(03[2-9]|05[2568]|07[06789]|08[156789]|09[0-9])[0-9]{7}" title="Nhập số di động Việt Nam hợp lệ gồm 10 số, ví dụ 0912345678." autocomplete="tel" required>
-                <select name="Dịch vụ quan tâm" required>
-                    <option value="">Chọn dịch vụ quan tâm...</option>
-                    <option>Tư vấn vật liệu xây dựng</option>
-                    <option>Tư vấn Thiết kế Nội thất</option>
-                    <option>Thi công nhà trọn gói</option>
-                    <option>Tư vấn thiết kế xây dựng nhà trọn gói</option>
-                    <option>Tư vấn Thiết kế Nội thất</option>
-                    <option>Dịch vụ Khu vui chơi</option>
-                </select>
-                <textarea name="Nội dung yêu cầu" rows="5" placeholder="Nội dung yêu cầu chi tiết..."></textarea>
-                <button type="submit">Gửi Yêu Cầu</button>
-                <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
-            </form>
         </div>
     </section>
 
@@ -153,6 +159,6 @@
             <p>© 2026 Hoàng Hải Luxury. Tất cả các quyền được bảo lưu.</p>
         </div>
     </footer>
-    <script src="main.js?v=20261005-mobile"></script>
+    <script src="main.js?v=20261005-contact-form"></script>
 </body>
 </html>

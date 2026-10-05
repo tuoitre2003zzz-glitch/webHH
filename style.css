@@ -4000,9 +4000,11 @@ header {
 
 .contact-layout {
     display: grid;
-    grid-template-columns: 1fr 1.1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 28px;
     align-items: start;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .contact-info {
@@ -5558,8 +5560,9 @@ header {
 
 /* --- CTA / FORM --- */
 .contact-form {
-    max-width: 760px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: none;
+    margin: 0;
     display: grid;
     gap: 18px;
     background: rgba(255,255,255,0.78);
@@ -5567,6 +5570,31 @@ header {
     padding: 32px;
     border-radius: 24px;
     box-shadow: 0 18px 38px rgba(20,20,20,0.08);
+}
+
+.contact-form-heading h2 {
+    margin: 0 0 8px;
+    color: var(--primary-color);
+    font-size: clamp(22px, 3vw, 30px);
+}
+
+.contact-form-heading p {
+    margin: 0;
+    color: var(--muted-color);
+    line-height: 1.6;
+}
+
+.contact-form > label {
+    margin-bottom: -12px;
+    color: var(--primary-color);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.contact-form > label span {
+    color: var(--muted-color);
+    font-size: 12px;
+    font-weight: 400;
 }
 
 .contact-form input,
