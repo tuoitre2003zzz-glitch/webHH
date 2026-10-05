@@ -8087,12 +8087,8 @@ main .activity-card img {
     }
 
     .footer-inner {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 24px 18px;
-    }
-
-    .footer-brand {
-        grid-column: 1 / -1;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
     }
 
     .footer-brand p {
@@ -8117,13 +8113,8 @@ main .activity-card img {
         line-height: 1.5;
     }
 
-    .footer-column:last-child {
-        grid-column: 1 / -1;
-    }
-
     .footer-column:last-child .footer-list {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        column-gap: 18px;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .footer-bottom {
