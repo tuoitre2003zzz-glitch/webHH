@@ -6404,6 +6404,16 @@ header {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.catalog-toolbar select {
+    font-weight: 700;
+}
+
+.catalog-toolbar select:has(option:checked[value="all"]),
+.catalog-toolbar select:has(option:checked[value="default"]) {
+    color: rgba(24, 24, 24, 0.42);
+    font-weight: 400;
+}
+
 .catalog-toolbar input:focus,
 .catalog-toolbar select:focus {
     border-color: var(--accent-color);
