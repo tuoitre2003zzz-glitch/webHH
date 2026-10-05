@@ -8115,6 +8115,10 @@ main .activity-card img {
         line-height: 1.5;
     }
 
+    .footer-list li:nth-child(even) {
+        text-align: right;
+    }
+
     .footer-list li:last-child:nth-child(odd) {
         grid-column: 1 / -1;
     }
