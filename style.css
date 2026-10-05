@@ -7905,3 +7905,72 @@ main .activity-card img {
         font-size: 12px;
     }
 }
+
+@media screen and (max-width: 600px) {
+    .logo {
+        font-size: clamp(13px, 3.6vw, 15px);
+        letter-spacing: 0;
+    }
+
+    .page-header h1,
+    .hero-content h1,
+    .section-title,
+    .product-detail-info h1,
+    .card-content h3 {
+        text-wrap: balance;
+        letter-spacing: 0;
+    }
+
+    .page-header h1 {
+        font-size: clamp(28px, 7.5vw, 36px);
+        line-height: 1.15;
+    }
+
+    .hero-content h1 {
+        font-size: clamp(30px, 8.5vw, 38px);
+        line-height: 1.08;
+    }
+
+    .hero-content h1 span {
+        white-space: nowrap;
+    }
+
+    .section-title {
+        font-size: clamp(23px, 6.2vw, 28px);
+        line-height: 1.18;
+    }
+
+    .card-content h3,
+    .product-topline h3 {
+        font-size: clamp(14px, 3.8vw, 15px);
+        line-height: 1.32;
+    }
+
+    .interior-product-room,
+    .product-detail-description p,
+    .product-detail-description li,
+    .product-detail-note {
+        text-wrap: pretty;
+    }
+
+    .hero-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+    }
+
+    .hero-actions .btn:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media screen and (max-width: 360px) {
+    .estimate-layout > *,
+    .estimate-form,
+    .estimate-result {
+        min-width: 0;
+    }
+
+    #house-estimate-form .estimate-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
