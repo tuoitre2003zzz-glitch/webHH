@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vật Liệu Xây Dựng | Hoàng Hải Luxury</title>
-    <link rel="stylesheet" href="style.css?v=20261005-mobile">
+    <link rel="stylesheet" href="style.css?v=20261005-catalog-rows">
     <style>
         .materials-grid .product-card > img {
             object-fit: contain;
@@ -171,18 +171,53 @@
             }
 
             .materials-grid .product-card .card-content {
+                display: grid;
+                grid-template-rows: 38px 22px auto;
+                align-content: start;
                 gap: 8px;
                 padding: 12px;
             }
 
             .materials-grid .product-card h3 {
-                min-height: 40px;
-                font-size: 14px;
+                display: -webkit-box;
+                min-height: 0;
+                overflow: hidden;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
+                font-size: 13px;
+                line-height: 19px;
+            }
+
+            .materials-grid .size-tag {
+                justify-self: start;
+                align-self: start;
+                white-space: nowrap;
+            }
+
+            .material-price {
+                display: grid;
+                grid-template-columns: max-content max-content;
+                justify-content: start;
+                align-content: start;
+                column-gap: 4px;
+                row-gap: 3px;
+                min-width: 0;
+            }
+
+            .material-price-label {
+                grid-column: 1 / -1;
             }
 
             .material-price-value {
-                font-size: 15px;
+                font-size: clamp(12px, 3.7vw, 14px);
+                white-space: nowrap;
             }
+
+            .material-price-unit {
+                font-size: 11px;
+                white-space: nowrap;
+            }
+
         }
 
         @media (max-width: 360px) {

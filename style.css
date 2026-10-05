@@ -7974,3 +7974,44 @@ main .activity-card img {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+@media screen and (max-width: 700px) {
+    .interior-product-card .card-content {
+        display: grid;
+        grid-template-rows: 64px auto;
+        align-content: start;
+        gap: 8px;
+    }
+
+    .interior-product-card .product-topline {
+        display: grid;
+        grid-template-rows: 38px 22px;
+        align-content: start;
+        justify-items: start;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .interior-product-card .product-topline h3 {
+        display: -webkit-box;
+        min-width: 0;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        font-size: clamp(13px, 3.7vw, 15px);
+        line-height: 19px;
+    }
+
+    .interior-product-card .price {
+        align-self: start;
+        padding: 3px 7px;
+        font-size: clamp(10px, 3vw, 12px);
+        line-height: 14px;
+        white-space: nowrap;
+    }
+
+    .interior-product-card .interior-product-room {
+        align-self: start;
+        line-height: 18px;
+    }
+}
