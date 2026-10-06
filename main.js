@@ -552,6 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     const estimateForm = document.querySelector('#house-estimate-form');
+    const estimateResult = document.querySelector('.estimate-result');
     const estimateTotal = document.querySelector('#estimate-total');
     const estimateArea = document.querySelector('#estimate-area');
     const estimateFloorDetail = document.querySelector('#estimate-floor-detail');
@@ -1603,6 +1604,9 @@ document.addEventListener('DOMContentLoaded', () => {
             estimateUnitPrice.textContent = `${formatNumber(unitPrice)} đ/m²`;
             hasCalculatedPackage = true;
             updatePackagePreview();
+            if (estimateResult && window.matchMedia('(max-width: 768px)').matches) {
+                estimateResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         });
     }
 
@@ -1926,16 +1930,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const lightboxImage = lightbox.querySelector('img');
     const lightboxClose = lightbox.querySelector('.lightbox-close');
+    let previousBodyOverflow = '';
     const closeLightbox = () => {
+        if (!lightbox.classList.contains('active')) return;
         lightbox.classList.remove('active');
         lightbox.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = previousBodyOverflow;
     };
 
     const openLightbox = (image) => {
-            lightboxImage.src = image.currentSrc || image.src;
-            lightboxImage.alt = image.alt || 'Hình ảnh xem toàn màn hình';
-            lightbox.classList.add('active');
-            lightbox.setAttribute('aria-hidden', 'false');
+        if (!lightbox.classList.contains('active')) {
+            previousBodyOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+        }
+        lightboxImage.src = image.currentSrc || image.src;
+        lightboxImage.alt = image.alt || 'Hình ảnh xem toàn màn hình';
+        lightbox.classList.add('active');
+        lightbox.setAttribute('aria-hidden', 'false');
     };
 
     document.querySelectorAll('.card img:not(.map-link img):not(.activity-card img), .hero-slide img, .page-header img').forEach((image) => {

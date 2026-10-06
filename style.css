@@ -208,6 +208,29 @@ body.interior-page .card img {
     transform: rotate(90deg);
 }
 
+@media screen and (max-width: 768px) {
+    .image-lightbox {
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        padding: 64px 16px 16px;
+        overflow: hidden;
+    }
+
+    .image-lightbox img {
+        width: auto;
+        max-width: 100%;
+        max-height: calc(100dvh - 80px);
+        margin: 0 auto;
+        object-fit: contain;
+    }
+
+    .lightbox-close {
+        top: 12px;
+        right: 12px;
+    }
+}
+
 /* --- HEADER & MENU ĐỒNG BỘ --- */
 header {
     position: fixed;
@@ -8300,5 +8323,165 @@ main .activity-card img {
     .footer-bottom p {
         font-size: 12px;
         line-height: 1.5;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    html {
+        font-size: 16px;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+    }
+
+    body,
+    main {
+        width: 100%;
+        min-width: 0;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .section,
+    .page-header {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    body form input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="reset"]):not([type="button"]):not([type="image"]):not([type="range"]),
+    body form select,
+    body form textarea {
+        font-size: 16px !important;
+    }
+
+    .estimate-result {
+        scroll-margin-top: 76px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .estimate-package-preview,
+    .estimate-package-content,
+    .estimate-package-content .estimate-package-materials-wrap,
+    .estimate-package-table-wrap {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .estimate-package-table {
+        width: 100%;
+        min-width: 0;
+        table-layout: fixed;
+    }
+
+    .estimate-package-table thead th:nth-child(1) {
+        width: 54px;
+    }
+
+    .estimate-package-table thead th:nth-child(3) {
+        width: 160px;
+    }
+
+    .estimate-package-table th,
+    .estimate-package-table td {
+        padding: 9px 8px;
+    }
+
+    .estimate-package-table th + th,
+    .estimate-package-table td + td {
+        border-left-width: 1px;
+    }
+
+    .estimate-package-table thead th {
+        font-size: 12px;
+        letter-spacing: 0.04em;
+    }
+
+    .estimate-package-section-row td {
+        padding: 12px 16px;
+        font-size: 15px;
+        letter-spacing: 0.05em;
+    }
+
+    .estimate-package-index {
+        font-size: 14px;
+    }
+
+    .estimate-package-name {
+        padding-right: 12px !important;
+        padding-left: 12px !important;
+    }
+
+    .estimate-package-name span {
+        font-size: 15px;
+        line-height: 1.45;
+        text-align: left;
+        overflow-wrap: anywhere;
+    }
+
+    .estimate-package-thumb {
+        padding: 6px;
+    }
+
+    .estimate-package-thumb img,
+    .estimate-package-thumb-note {
+        height: 112px;
+        min-height: 112px;
+        border-radius: 9px;
+    }
+
+    .estimate-package-thumb-note {
+        padding: 8px;
+        font-size: 13px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .estimate-package-table thead th:nth-child(1) {
+        width: 42px;
+    }
+
+    .estimate-package-table thead th:nth-child(3) {
+        width: 108px;
+    }
+
+    .estimate-package-table th,
+    .estimate-package-table td {
+        padding: 7px 5px;
+    }
+
+    .estimate-package-table thead th {
+        font-size: 10px;
+        letter-spacing: 0.02em;
+    }
+
+    .estimate-package-section-row td {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    .estimate-package-name {
+        padding-right: 8px !important;
+        padding-left: 10px !important;
+    }
+
+    .estimate-package-name span {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .estimate-package-thumb {
+        padding: 5px;
+    }
+
+    .estimate-package-thumb img,
+    .estimate-package-thumb-note {
+        height: 90px;
+        min-height: 90px;
+    }
+
+    .estimate-package-thumb-note {
+        padding: 5px;
+        font-size: 11px;
     }
 }
