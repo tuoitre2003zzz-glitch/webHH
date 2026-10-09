@@ -568,6 +568,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const packageList = document.querySelector('#estimate-package-list');
     const packageTableWrap = document.querySelector('#estimate-package-table-wrap');
     const packageNotes = document.querySelector('#estimate-package-notes');
+    const constructionPreview = document.querySelector('#estimate-construction-preview');
+    const constructionSummary = document.querySelector('#estimate-construction-summary');
+    const constructionStatus = document.querySelector('#estimate-construction-status');
 
     if (packagePreview) {
         packagePreview.hidden = true;
@@ -1375,6 +1378,79 @@ document.addEventListener('DOMContentLoaded', () => {
         const extraPanel = document.querySelector('#estimate-extra-panel');
         const estimateReset = document.querySelector('#estimate-reset');
         const formatArea = (value) => new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 }).format(value);
+        let constructionSimulation = null;
+        let constructionSimulationLoad = null;
+        let constructionPreviewRequest = 0;
+        const loadScript = (src) => new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = () => reject(new Error(`Không tải được mô-đun mô phỏng: ${src}`));
+            document.head.appendChild(script);
+        });
+        const ensureConstructionSimulation = () => {
+            if (window.THREE && window.createConstructionSimulation) {
+                return Promise.resolve();
+            }
+            if (!constructionSimulationLoad) {
+                constructionSimulationLoad = (async () => {
+                    if (!window.THREE) {
+                        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js');
+                    }
+                    if (!window.createConstructionSimulation) {
+                        await loadScript('construction-simulation.js');
+                    }
+                    if (!window.THREE || !window.createConstructionSimulation) {
+                        throw new Error('Thư viện mô phỏng 3D chưa sẵn sàng.');
+                    }
+                })().catch((error) => {
+                    constructionSimulationLoad = null;
+                    throw error;
+                });
+            }
+            return constructionSimulationLoad;
+        };
+        const updateConstructionPreview = async (unitPrice) => {
+            if (!constructionPreview || !constructionSummary || !constructionStatus) {
+                return;
+            }
+            const request = ++constructionPreviewRequest;
+            const selectedOption = finishField.selectedOptions[0];
+            const packageName = finishField.value === 'custom'
+                ? 'Gói tùy chỉnh'
+                : (finishField.value ? selectedOption?.textContent.split(' - ')[0].trim() : '')
+                    || 'Quy trình thi công';
+            const customPrice = Number(String(customFinishInput?.value || '').replace(/\D/g, ''));
+            const currentPrice = Number.isFinite(unitPrice)
+                ? unitPrice
+                : finishField.value === 'custom' ? customPrice : Number(finishField.value);
+            const hasPrice = Number.isFinite(currentPrice) && currentPrice > 0;
+            const formattedPrice = hasPrice
+                ? ` · ${new Intl.NumberFormat('vi-VN').format(Math.round(currentPrice))} đ/m²`
+                : '';
+            constructionStatus.hidden = false;
+            constructionStatus.textContent = 'Đang tải mô hình thi công 3D…';
+            constructionSummary.textContent = `Mô phỏng quy trình thi công cho ${packageName}${formattedPrice}. Kết cấu và trình tự thi công được áp dụng chung; vật tư hoàn thiện thay đổi theo gói đã chọn ở bảng vật tư phía trên.`;
+            try {
+                await ensureConstructionSimulation();
+                if (request !== constructionPreviewRequest) {
+                    return;
+                }
+                if (!constructionSimulation) {
+                    constructionSimulation = window.createConstructionSimulation(constructionPreview);
+                }
+                constructionSimulation.setPackage(packageName, hasPrice ? currentPrice : null);
+                constructionSimulation.setActive(true);
+                constructionStatus.hidden = true;
+            } catch (error) {
+                if (request !== constructionPreviewRequest) {
+                    return;
+                }
+                console.error('Không thể khởi tạo mô phỏng thi công.', error);
+                constructionStatus.hidden = false;
+                constructionStatus.textContent = 'Không tải được mô hình 3D. Vui lòng kiểm tra kết nối mạng rồi tải lại trang.';
+            }
+        };
         const MAX_CUSTOM_PRICE_DIGITS = 8;
         const getTotalFloors = () => {
             const groundFloors = Number(groundFloorsField.value || 1);
@@ -1511,6 +1587,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCustomPriceState();
             hasCalculatedPackage = false;
             updatePackagePreview();
+            updateConstructionPreview();
         });
         customFinishInput?.addEventListener('focus', () => {
             customPriceDigitsBuffer = String(customFinishInput.value || '').replace(/\D/g, '');
@@ -1520,6 +1597,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const digits = String(customFinishInput.value || '').replace(/\D/g, '').slice(0, MAX_CUSTOM_PRICE_DIGITS);
             customPriceDigitsBuffer = digits;
             customFinishInput.value = digits;
+            if (hasCalculatedPackage) {
+                hasCalculatedPackage = false;
+                updatePackagePreview();
+            }
+            updateConstructionPreview();
         });
         customFinishInput?.addEventListener('blur', () => {
             const digits = String(customFinishInput.value || '').replace(/\D/g, '');
@@ -1530,6 +1612,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateExtraAreaDisplay();
         updateCustomPriceState();
         updateEstimateOptions();
+        updateConstructionPreview();
         estimateReset?.addEventListener('click', () => {
             estimateForm.reset();
             groundFloorsField.value = '1';
@@ -1548,6 +1631,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateExtraAreaDisplay();
             hasCalculatedPackage = false;
             updatePackagePreview();
+            updateConstructionPreview();
             updateEstimateOptions();
         });
         estimateForm.addEventListener('submit', (event) => {
@@ -1573,6 +1657,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (![length, width, floors, roofRate, foundationRate, unitPrice].every(Number.isFinite) || floors <= 0 || !style) {
                 hasCalculatedPackage = false;
                 updatePackagePreview();
+                updateConstructionPreview();
                 estimateTotal.textContent = '--';
                 estimateArea.textContent = 'Vui lòng điền và chọn đầy đủ thông tin để tính, không cần tải lại trang.';
                 estimateFloorDetail.textContent = '--';
@@ -1604,6 +1689,7 @@ document.addEventListener('DOMContentLoaded', () => {
             estimateUnitPrice.textContent = `${formatNumber(unitPrice)} đ/m²`;
             hasCalculatedPackage = true;
             updatePackagePreview();
+            updateConstructionPreview(unitPrice);
             if (estimateResult && window.matchMedia('(max-width: 768px)').matches) {
                 estimateResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
@@ -1949,9 +2035,15 @@ document.addEventListener('DOMContentLoaded', () => {
         lightbox.setAttribute('aria-hidden', 'false');
     };
 
-    document.querySelectorAll('.card img:not(.map-link img):not(.activity-card img), .hero-slide img, .page-header img').forEach((image) => {
+    document.querySelectorAll('.card img:not(.map-link img):not(.activity-card img), .hero-slide img, .page-header img, .estimate-house-section img').forEach((image) => {
         if (image.closest('.materials-page .card, .interior-page .card')) return;
         image.addEventListener('click', () => openLightbox(image));
+        image.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openLightbox(image);
+            }
+        });
     });
 
     document.querySelectorAll('.playground-card').forEach((card) => {
