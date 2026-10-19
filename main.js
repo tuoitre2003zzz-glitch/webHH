@@ -869,11 +869,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return '5700000';
         }
 
-        if (finishValue === '6000000' || (finishValue === 'custom' && Number.isFinite(customPriceValue) && customPriceValue >= 6000000 && customPriceValue <= 6199000)) {
+        if (finishValue === '6000000' || (finishValue === 'custom' && Number.isFinite(customPriceValue) && customPriceValue >= 6000000 && customPriceValue < 6200000)) {
             return '6000000-6199000';
         }
 
-        if (finishValue === '6200000' || (finishValue === 'custom' && Number.isFinite(customPriceValue) && customPriceValue >= 6200000 && customPriceValue <= 6990000)) {
+        if (finishValue === '6200000' || (finishValue === 'custom' && Number.isFinite(customPriceValue) && customPriceValue >= 6200000 && customPriceValue < 7000000)) {
             return '6200000-6990000';
         }
 
@@ -1414,7 +1414,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!constructionPreview || !constructionSummary || !constructionStatus) {
                 return;
             }
+            if (!hasCalculatedPackage || !packagePreview || packagePreview.hidden) {
+                constructionPreview.hidden = true;
+                constructionPreviewRequest++;
+                constructionSimulation?.setActive(false);
+                return;
+            }
             const request = ++constructionPreviewRequest;
+            constructionPreview.hidden = false;
             const selectedOption = finishField.selectedOptions[0];
             const packageName = finishField.value === 'custom'
                 ? 'Gói tùy chỉnh'
@@ -1430,7 +1437,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 : '';
             constructionStatus.hidden = false;
             constructionStatus.textContent = 'Đang tải mô hình thi công 3D…';
-            constructionSummary.textContent = `Mô phỏng quy trình thi công cho ${packageName}${formattedPrice}. Kết cấu và trình tự thi công được áp dụng chung; vật tư hoàn thiện thay đổi theo gói đã chọn ở bảng vật tư phía trên.`;
+            constructionSummary.textContent = `Mô phỏng quy trình thi công tham khảo cho ${packageName}${formattedPrice}; hoạt ảnh rút gọn thời gian và mô hình minh họa một phương án kết cấu. Mô phỏng tách đổ dầm và sàn để minh họa trình tự; chỉ áp dụng ngoài thực tế khi hồ sơ thiết kế cho phép và quy định rõ mạch ngừng. Vật tư hoàn thiện thay đổi theo gói đã chọn ở bảng vật tư phía trên. Cấu tạo và thời điểm tháo cốp pha/chống phải theo hồ sơ được duyệt, kết quả kiểm tra cường độ và chỉ dẫn của kỹ sư phụ trách; mô phỏng không thay thế hồ sơ thi công.`;
             try {
                 await ensureConstructionSimulation();
                 if (request !== constructionPreviewRequest) {

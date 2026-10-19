@@ -217,6 +217,32 @@
             </div>
 
             <div class="estimate-package-preview" id="estimate-package-preview" hidden>
+                <section class="estimate-construction-preview" id="estimate-construction-preview" aria-labelledby="estimate-construction-title" hidden>
+                    <div class="estimate-construction-heading">
+                        <div>
+                            <span class="eyebrow">Mô phỏng theo gói đã chọn</span>
+                            <h3 id="estimate-construction-title">Quy trình thi công nhà trọn gói</h3>
+                            <p id="estimate-construction-summary"></p>
+                        </div>
+                        <p class="estimate-construction-status" id="estimate-construction-status" role="status" hidden></p>
+                    </div>
+                    <div class="estimate-construction-layout">
+                        <div class="estimate-construction-model">
+                            <div class="estimate-construction-stage">
+                                <canvas id="estimate-construction-canvas" aria-label="Mô hình 3D ngôi nhà theo từng giai đoạn thi công"></canvas>
+                                <div class="estimate-construction-reference" id="estimate-construction-reference" hidden>
+                                    <img id="estimate-construction-reference-image" alt="">
+                                </div>
+                                <button class="estimate-construction-reference-toggle" id="estimate-construction-reference-toggle" type="button" aria-pressed="false" disabled>Hiện ảnh thực tế</button>
+                                <span class="estimate-construction-tag" id="estimate-construction-tag"></span>
+                                <span class="estimate-construction-hint">Kéo để xoay · cuộn hoặc chụm để phóng to</span>
+                            </div>
+                            <div class="estimate-construction-steps" id="estimate-construction-steps"></div>
+                        </div>
+                        <div class="estimate-construction-panel" id="estimate-construction-panel" aria-live="polite"></div>
+                    </div>
+                </section>
+
                 <div class="estimate-package-content">
                     <div class="estimate-package-materials-wrap">
                         <div class="estimate-package-table-wrap" id="estimate-package-table-wrap">
@@ -242,28 +268,6 @@
                     </div>
                 </div>
             </div>
-
-            <section class="estimate-construction-preview" id="estimate-construction-preview" aria-labelledby="estimate-construction-title">
-                <div class="estimate-construction-heading">
-                    <div>
-                        <span class="eyebrow">Mô phỏng theo gói đã chọn</span>
-                        <h3 id="estimate-construction-title">Quy trình thi công nhà trọn gói</h3>
-                        <p id="estimate-construction-summary"></p>
-                    </div>
-                    <p class="estimate-construction-status" id="estimate-construction-status" role="status" hidden></p>
-                </div>
-                <div class="estimate-construction-layout">
-                    <div class="estimate-construction-model">
-                        <div class="estimate-construction-stage">
-                            <canvas id="estimate-construction-canvas" aria-label="Mô hình 3D ngôi nhà theo từng giai đoạn thi công"></canvas>
-                            <span class="estimate-construction-tag" id="estimate-construction-tag"></span>
-                            <span class="estimate-construction-hint">Kéo để xoay · cuộn hoặc chụm để phóng to</span>
-                        </div>
-                        <div class="estimate-construction-steps" id="estimate-construction-steps"></div>
-                    </div>
-                    <div class="estimate-construction-panel" id="estimate-construction-panel" aria-live="polite"></div>
-                </div>
-            </section>
 
             <div class="estimate-guide" aria-label="Hướng dẫn công thức tính">
                 <div class="estimate-guide-card estimate-guide-card--foundation">
