@@ -1398,7 +1398,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js');
                     }
                     if (!window.createConstructionSimulation) {
-                        await loadScript('construction-simulation.js');
+                        await loadScript('construction-simulation.js?v=20261021-mobile-gestures');
                     }
                     if (!window.THREE || !window.createConstructionSimulation) {
                         throw new Error('Thư viện mô phỏng 3D chưa sẵn sàng.');
@@ -1437,7 +1437,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 : '';
             constructionStatus.hidden = false;
             constructionStatus.textContent = 'Đang tải mô hình thi công 3D…';
-            constructionSummary.textContent = `Mô phỏng quy trình thi công tham khảo cho ${packageName}${formattedPrice}; hoạt ảnh rút gọn thời gian và mô hình minh họa một phương án kết cấu. Mô phỏng tách đổ dầm và sàn để minh họa trình tự; chỉ áp dụng ngoài thực tế khi hồ sơ thiết kế cho phép và quy định rõ mạch ngừng. Vật tư hoàn thiện thay đổi theo gói đã chọn ở bảng vật tư phía trên. Cấu tạo và thời điểm tháo cốp pha/chống phải theo hồ sơ được duyệt, kết quả kiểm tra cường độ và chỉ dẫn của kỹ sư phụ trách; mô phỏng không thay thế hồ sơ thi công.`;
+            constructionSummary.textContent = `Mô phỏng tham khảo cho ${packageName}${formattedPrice}; thời gian được rút gọn, kết cấu và trình tự đổ dầm/sàn chỉ mang tính minh họa. Thi công thực tế, mạch ngừng và tháo cốp pha/chống phải theo hồ sơ được duyệt, kết quả kiểm tra cường độ và chỉ dẫn kỹ sư. Vật tư hoàn thiện theo gói đã chọn; mô phỏng không thay thế hồ sơ thi công.`;
             try {
                 await ensureConstructionSimulation();
                 if (request !== constructionPreviewRequest) {

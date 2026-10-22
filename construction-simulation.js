@@ -911,14 +911,42 @@ window.createConstructionSimulation = (root) => {
         ply.transparent = false; ply.opacity = 1; ply.needsUpdate = true; wmat.transparent = i == 26; wmat.opacity = i == 26 ? .25 : 1; wmat.needsUpdate = true; const sm = i >= 29 ? slabP : i >= 27 ? slabL : concM;[g.slab1, g.slab2].forEach(gr => gr.children.forEach(m => { m.material = sm })); g.tamcap.children.forEach(m => { m.material = i >= 27 ? slabL : brickM })
         R.shadowMap.needsUpdate = true;
     }
-    let az = .7, el = .4, dist = 40, drag = null, pinch = null, auto = !matchMedia("(prefers-reduced-motion:reduce)").matches, last = performance.now();
+    let az = .7, el = .4, dist = 40, pinchDistance = 0, auto = !matchMedia("(prefers-reduced-motion:reduce)").matches, last = performance.now();
     function upd() { cam.position.set(dist * Math.cos(el) * Math.sin(az), camTy + dist * Math.sin(el), dist * Math.cos(el) * Math.cos(az)); cam.lookAt(0, camTy, 0) }
-    cv.addEventListener("pointerdown", e => { drag = [e.clientX, e.clientY]; cv.setPointerCapture(e.pointerId); auto = false; follow = false });
-    cv.addEventListener("pointermove", e => { if (!drag) return; az -= (e.clientX - drag[0]) * .008; el = Math.max(.05, Math.min(1.4, el + (e.clientY - drag[1]) * .006)); drag = [e.clientX, e.clientY] });
-    cv.addEventListener("pointerup", () => drag = null); cv.addEventListener("pointercancel", () => drag = null);
+    const activePointers = new Map();
+    const pointerDistance = () => {
+        const points = Array.from(activePointers.values());
+        return points.length < 2 ? 0 : Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y);
+    };
+    const endPointer = e => {
+        activePointers.delete(e.pointerId);
+        pinchDistance = 0;
+    };
+    cv.addEventListener("pointerdown", e => {
+        e.preventDefault();
+        cv.setPointerCapture(e.pointerId);
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        pinchDistance = activePointers.size === 2 ? pointerDistance() : 0;
+        auto = false;
+        follow = false;
+    });
+    cv.addEventListener("pointermove", e => {
+        const previous = activePointers.get(e.pointerId);
+        if (!previous) return;
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (activePointers.size === 1) {
+            az -= (e.clientX - previous.x) * .01;
+            el = Math.max(.05, Math.min(1.4, el + (e.clientY - previous.y) * .008));
+        } else if (activePointers.size === 2) {
+            const distance = pointerDistance();
+            if (pinchDistance) dist = Math.max(20, Math.min(70, dist - (distance - pinchDistance) * .08));
+            pinchDistance = distance;
+        }
+    });
+    cv.addEventListener("pointerup", endPointer);
+    cv.addEventListener("pointercancel", endPointer);
+    cv.addEventListener("lostpointercapture", endPointer);
     cv.addEventListener("wheel", e => { e.preventDefault(); follow = false; dist = Math.max(20, Math.min(70, dist + e.deltaY * .02)) }, { passive: false });
-    cv.addEventListener("touchmove", e => { if (e.touches.length == 2) { e.preventDefault(); const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); if (pinch) dist = Math.max(20, Math.min(70, dist - (d - pinch) * .05)); pinch = d } }, { passive: false });
-    cv.addEventListener("touchend", () => pinch = null);
     function rs() { const w = cv.clientWidth, h = cv.clientHeight; R.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix() }
     window.addEventListener("resize", rs);
     let renderActive = true, renderFrame = 0, lastFrame = 0;

@@ -122,6 +122,7 @@ body {
         radial-gradient(circle at top left, rgba(200, 161, 92, 0.18), transparent 28%),
         radial-gradient(circle at 88% 18%, rgba(87, 126, 146, 0.12), transparent 24%),
         linear-gradient(180deg, #f9f5f0 0%, #f5efe8 100%);
+    background-attachment: fixed;
     line-height: 1.6;
     overflow-x: hidden;
 }
@@ -696,7 +697,7 @@ header {
 .product-detail-gallery {
     min-width: 0;
     padding: 22px;
-    background: #18262d;
+    background: #f5f3ee;
 }
 
 .product-detail-layout[hidden],
@@ -3228,6 +3229,11 @@ header {
     font-weight: 400;
 }
 
+.feng-shui-fields select option:not([value=""]) {
+    color: var(--text-color);
+    font-weight: 400;
+}
+
 .feng-shui-wide {
     grid-column: 1 / -1;
 }
@@ -5336,8 +5342,23 @@ header {
         border-radius: 11px;
     }
 
+    .estimate-construction-model {
+        position: sticky;
+        top: 68px;
+        z-index: 3;
+        align-self: start;
+        padding: 6px;
+        border: 1px solid rgba(24, 43, 56, 0.12);
+        border-radius: 13px;
+        background: #f7f8f8;
+        box-shadow: 0 6px 18px rgba(24, 43, 56, 0.12);
+    }
+
     #estimate-construction-canvas {
-        height: clamp(240px, 72vw, 330px);
+        height: clamp(190px, 27vh, 230px);
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
     }
 
     #estimate-construction-reference-toggle {
@@ -5380,8 +5401,12 @@ header {
     }
 
     .estimate-construction-panel {
-        max-height: 55vh;
-        padding: 17px 15px;
+        max-height: 36vh;
+        max-height: 36dvh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        padding: 14px 12px;
     }
 }
 
