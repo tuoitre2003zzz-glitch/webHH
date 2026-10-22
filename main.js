@@ -1596,6 +1596,51 @@ document.addEventListener('DOMContentLoaded', () => {
             updatePackagePreview();
             updateConstructionPreview();
         });
+        estimateForm.addEventListener('change', (event) => {
+            if (!window.matchMedia('(min-width: 769px)').matches
+                || !(event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement)
+                || !event.target.closest('.estimate-grid')
+                || event.target.disabled
+                || event.target.readOnly) return;
+
+            const changedField = event.target;
+            const currentItem = changedField.closest('.estimate-floor-group, .estimate-custom-price-panel, label');
+            if (!currentItem) return;
+
+            const gridItems = Array.from(currentItem.parentElement.children)
+                .filter((item) => !item.hidden && item.getBoundingClientRect().height > 0);
+            const currentTop = currentItem.getBoundingClientRect().top;
+            const currentRow = gridItems.filter((item) => Math.abs(item.getBoundingClientRect().top - currentTop) < 4);
+            const rowIsComplete = currentRow.every((item) => Array.from(item.querySelectorAll('input, select'))
+                .filter((field) => !field.disabled && !field.readOnly)
+                .every((field) => {
+                    const isCustomPrice = field === customFinishInput && finishField.value === 'custom';
+                    if (isCustomPrice && !field.value.trim()) return false;
+                    if (!field.value.trim()) return !field.required;
+                    return field.checkValidity();
+                }));
+            if (!rowIsComplete) return;
+
+            const nextGridItem = gridItems
+                .filter((item) => item.getBoundingClientRect().top > currentTop + 4)
+                .sort((first, second) => first.getBoundingClientRect().top - second.getBoundingClientRect().top)[0];
+            const nextStep = nextGridItem || document.querySelector('.estimate-extra-toggle-wrap');
+            if (!nextStep) return;
+
+            window.requestAnimationFrame(() => {
+                const stepRect = nextStep.getBoundingClientRect();
+                const headerBottom = document.querySelector('header')?.getBoundingClientRect().bottom || 0;
+                const visibleTop = Math.max(16, headerBottom + 16);
+                const visibleBottom = window.innerHeight - 16;
+                const viewportCenter = (visibleTop + visibleBottom) / 2;
+                const stepCenter = (stepRect.top + stepRect.bottom) / 2;
+                const scrollOffset = stepCenter - viewportCenter;
+
+                if (Math.abs(scrollOffset) > 12) {
+                    smoothScrollTo(window.scrollY + scrollOffset);
+                }
+            });
+        });
         customFinishInput?.addEventListener('focus', () => {
             customPriceDigitsBuffer = String(customFinishInput.value || '').replace(/\D/g, '');
             customFinishInput.value = customPriceDigitsBuffer;
@@ -2259,13 +2304,17 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileNavClose.innerHTML = '&times;';
         mobileNav?.appendChild(mobileNavClose);
 
+        if (!navList.id) navList.id = 'nav-list';
         mobileMenu.setAttribute('role', 'button');
         mobileMenu.setAttribute('tabindex', '0');
+        mobileMenu.setAttribute('aria-label', 'Mở menu');
+        mobileMenu.setAttribute('aria-controls', navList.id);
         mobileMenu.setAttribute('aria-expanded', 'false');
 
         const setMobileMenu = (isOpen) => {
             navList.classList.toggle('active', isOpen);
             mobileMenu.setAttribute('aria-expanded', String(isOpen));
+            mobileMenu.setAttribute('aria-label', isOpen ? 'Đóng menu' : 'Mở menu');
             document.body.style.overflow = isOpen ? 'hidden' : '';
         };
 
@@ -2287,6 +2336,23 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileNavClose.addEventListener('click', () => {
             setMobileMenu(false);
             mobileMenu.focus();
+        });
+
+        mobileNav?.addEventListener('click', (event) => {
+            if (event.target === mobileNav) setMobileMenu(false);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && navList.classList.contains('active')) {
+                setMobileMenu(false);
+                mobileMenu.focus();
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1100 && navList.classList.contains('active')) {
+                setMobileMenu(false);
+            }
         });
 
         navList.querySelectorAll('a').forEach((link) => {
