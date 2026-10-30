@@ -7,7 +7,7 @@
     <title>Hoàng Hải Luxury | Thiết kế & xây dựng hiện đại</title>
     <meta name="description"
         content="Hoàng Hải Luxury cung cấp vật liệu xây dựng, nội thất, kiến trúc và dịch vụ khu vui chơi giải trí chuyên nghiệp.">
-    <link rel="stylesheet" href="style.css?v=20261022-navigation-refresh">
+    <link rel="stylesheet" href="style.css?v=20261028-house-samples-generic-v1">
     <link rel="icon" type="image/png" href="img/logo.png">
 </head>
 
@@ -85,6 +85,10 @@
                                 <img src="img/banner%201.png" alt="Bóc tách khối lượng, giá cả minh bạch"
                                     loading="lazy" fetchpriority="low" decoding="async">
                             </div>
+                            <div class="hero-slide hero-slide--construction">
+                                <img src="img/banner%202.png" alt="Tư vấn xây dựng và thiết kế nhà chuyên nghiệp"
+                                    loading="lazy" fetchpriority="low" decoding="async">
+                            </div>
                         </div>
                         <button class="hero-arrow hero-arrow--prev" type="button"
                             aria-label="Ảnh trước">&#10094;</button>
@@ -96,6 +100,7 @@
                         <button class="slider-dot" type="button" aria-label="Slide 2"></button>
                         <button class="slider-dot" type="button" aria-label="Slide 3"></button>
                         <button class="slider-dot" type="button" aria-label="Slide 4"></button>
+                        <button class="slider-dot" type="button" aria-label="Slide 5"></button>
                     </div>
                 </div>
             </div>
@@ -147,8 +152,14 @@
                                 <option value="Hiện đại">Hiện đại</option>
                                 <option value="Tân cổ điển">Tân cổ điển</option>
                                 <option value="Cổ điển">Cổ điển</option>
+                                <option value="mezzanine">Nhà gác lửng</option>
                             </select>
                         </label>
+                        <p class="estimate-mezzanine-hint" id="estimate-mezzanine-hint" hidden>
+                            <span><strong>* Gác lửng:</strong> </span>
+                            <span><strong>- Trệt:</strong> Đã có gác lửng khi chưa nhập Số Lầu. </span>
+                            <span><strong>- Số lầu:</strong> Số tầng xây thêm phía dưới gác lửng; khi đặt hệ số là 0, thì vẫn sẽ có gác lửng tương tự mục Trệt.</span>
+                        </p>
                         <label>
                             Kiểu mái
                             <select name="roof" required>
@@ -214,8 +225,8 @@
                         <button class="btn btn-primary" id="estimate-submit" type="submit">Tính dự toán sơ bộ</button>
                         <button class="btn estimate-reset" id="estimate-reset" type="button">Chọn lại</button>
                     </div>
-                    <p class="estimate-note">* Kết quả là mức tham khảo ban đầu. Điều kiện móng còn phải kiểm tra theo
-                        địa chất, tải trọng và hồ sơ kết cấu thực tế.</p>
+                    <p class="estimate-note">* Gác lửng ước tính bằng cách chừa phòng khách 3 m hoặc 30% chiều dài nhà
+                        (lấy mức lớn hơn); chốt theo bản vẽ. Dự toán và móng cần khảo sát thực tế.</p>
                 </form>
                 <aside class="estimate-result" aria-live="polite">
                     <span class="eyebrow">Kết quả dự kiến</span>
@@ -223,6 +234,8 @@
                     <p id="estimate-area">Nhập thông tin để bắt đầu tính.</p>
                     <div class="estimate-breakdown" id="estimate-breakdown">
                         <div><span>Diện tích tầng</span><strong id="estimate-floor-detail">--</strong></div>
+                        <div id="estimate-mezzanine-row" hidden><span>Diện tích gác lửng</span><strong
+                                id="estimate-mezzanine-detail">--</strong></div>
                         <div><span>Diện tích móng</span><strong id="estimate-foundation-detail">--</strong></div>
                         <div><span>Diện tích mái</span><strong id="estimate-roof-detail">--</strong></div>
                         <div><span>Diện tích bổ sung</span><strong id="estimate-extra-summary">--</strong></div>
@@ -253,6 +266,172 @@
                 </aside>
             </div>
 
+            <section class="estimate-house-samples" id="estimate-house-samples" aria-labelledby="estimate-house-samples-title" hidden>
+                <div class="estimate-house-samples-heading">
+                    <h3 id="estimate-house-samples-title">
+                        <span class="estimate-house-samples-kicker">GỢI Ý THIẾT KẾ</span>
+                        <span class="estimate-house-samples-title-text">Một số mẫu nhà</span>
+                    </h3>
+                    <p class="estimate-house-samples-budget" aria-label="Dự toán của bạn">
+                        <span class="estimate-house-samples-budget-label">Dự toán của bạn</span>
+                        <strong id="estimate-house-samples-budget">-- đ</strong>
+                    </p>
+                </div>
+                <div class="estimate-house-samples-grid" aria-label="Các mẫu nhà tham khảo">
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">01 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 01</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=01">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">02 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 02</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=02">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">03 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 03</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=03">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">04 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 04</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=04">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">05 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 05</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=05">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">06 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 06</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=06">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">07 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 07</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=07">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">08 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 08</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=08">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">09 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 09</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=09">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">10 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 10</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=10">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">11 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 11</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=11">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">12 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 12</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=12">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">13 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 13</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=13">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">14 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 14</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=14">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">15 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 15</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=15">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">16 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 16</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=16">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">17 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 17</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=17">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                    <figure class="estimate-house-sample">
+                        <img src="img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg" alt="Ảnh tham khảo mẫu nhà" loading="lazy">
+                        <figcaption>
+                            <span class="estimate-house-sample-type">18 · MẪU NHÀ</span>
+                            <strong>Mẫu nhà 18</strong>
+                            <a class="estimate-house-sample-detail" href="chi-tiet-mau-nha.html?ma=18">Xem chi tiết <b aria-hidden="true">→</b></a>
+                        </figcaption>
+                    </figure>
+                </div>
+                <nav class="estimate-house-samples-pagination" aria-label="Điều hướng trang mẫu nhà" hidden>
+                    <button class="estimate-house-samples-page-arrow" type="button" data-house-page-previous
+                        aria-label="Trang trước">‹</button>
+                    <div class="estimate-house-samples-page-numbers" aria-label="Chọn trang"></div>
+                    <button class="estimate-house-samples-page-arrow" type="button" data-house-page-next
+                        aria-label="Trang sau">›</button>
+                </nav>
+            </section>
+
             <div class="estimate-package-preview" id="estimate-package-preview" hidden>
                 <section class="estimate-construction-preview" id="estimate-construction-preview"
                     aria-labelledby="estimate-construction-title" hidden>
@@ -260,7 +439,6 @@
                         <div>
                             <span class="eyebrow">Mô phỏng theo gói đã chọn</span>
                             <h3 id="estimate-construction-title">Biện pháp thi công nhà trọn gói</h3>
-                            <p id="estimate-construction-summary"></p>
                         </div>
                         <p class="estimate-construction-status" id="estimate-construction-status" role="status" hidden>
                         </p>
@@ -575,7 +753,7 @@
         </div>
     </footer>
 
-    <script src="main.js?v=20261022-estimate-step-scroll"></script>
+    <script src="main.js?v=20261028-home-banner-2"></script>
 </body>
 
 </html>

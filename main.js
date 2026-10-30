@@ -24,6 +24,247 @@ document.addEventListener('DOMContentLoaded', () => {
     const heroPrevious = document.querySelector('.hero-arrow--prev');
     const heroNext = document.querySelector('.hero-arrow--next');
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const houseDetailPage = document.querySelector('[data-house-detail]');
+    if (houseDetailPage) {
+        const requestedHouseNumber = Number(new URLSearchParams(window.location.search).get('ma'));
+        const validHouseNumber = Number.isInteger(requestedHouseNumber)
+            && requestedHouseNumber >= 1
+            && requestedHouseNumber <= 18;
+        const houseNumber = validHouseNumber ? String(requestedHouseNumber).padStart(2, '0') : null;
+        const title = document.querySelector('#house-detail-title');
+        const number = document.querySelector('#house-detail-number');
+
+        if (houseNumber && title && number) {
+            title.textContent = `Mẫu nhà ${houseNumber}`;
+            number.textContent = houseNumber;
+            document.title = `Mẫu nhà ${houseNumber} | Hoàng Hải Luxury`;
+        } else {
+            if (title) {
+                title.textContent = 'Không tìm thấy mẫu nhà';
+            }
+            if (number) {
+                number.hidden = true;
+            }
+            const description = document.querySelector('.house-detail-description');
+            if (description) {
+                description.textContent = 'Mã mẫu nhà không hợp lệ hoặc mẫu nhà chưa có trong danh sách.';
+            }
+            document.title = 'Không tìm thấy mẫu nhà | Hoàng Hải Luxury';
+        }
+
+        const relatedSection = houseDetailPage.querySelector('[data-house-related-section]');
+        const relatedGrid = relatedSection?.querySelector('[data-house-related-grid]');
+        if (houseNumber && relatedGrid) {
+            const sampleImage = 'img/một%20số%20mẫu%20nhà/ảnh%20tham%20khảo.jpg';
+            const relatedHouseNumbers = Array.from({ length: 18 }, (_, index) => index + 1)
+                .filter((relatedNumber) => relatedNumber !== requestedHouseNumber);
+
+            relatedHouseNumbers.forEach((relatedNumber) => {
+                const formattedNumber = String(relatedNumber).padStart(2, '0');
+                const card = document.createElement('a');
+                card.className = 'house-related-card';
+                card.href = `chi-tiet-mau-nha.html?ma=${formattedNumber}`;
+                card.setAttribute('aria-label', `Xem chi tiết mẫu nhà ${formattedNumber}`);
+
+                const image = document.createElement('img');
+                image.src = sampleImage;
+                image.alt = `Ảnh tham khảo mẫu nhà ${formattedNumber}`;
+                image.loading = 'lazy';
+
+                const caption = document.createElement('span');
+                caption.className = 'house-related-card-caption';
+
+                const label = document.createElement('span');
+                label.className = 'house-related-card-label';
+                label.textContent = `MẪU NHÀ ${formattedNumber}`;
+
+                const cardTitle = document.createElement('strong');
+                cardTitle.textContent = `Mẫu nhà ${formattedNumber}`;
+
+                const linkText = document.createElement('span');
+                linkText.className = 'house-related-card-link';
+                linkText.setAttribute('aria-hidden', 'true');
+                linkText.textContent = 'Xem chi tiết →';
+
+                caption.append(label, cardTitle, linkText);
+                card.append(image, caption);
+                relatedGrid.append(card);
+            });
+
+            const relatedPagination = relatedSection.querySelector('[data-house-related-pagination]');
+            const relatedPageNumbers = relatedSection.querySelector('[data-house-related-page-numbers]');
+            const relatedPrevious = relatedSection.querySelector('[data-house-related-previous]');
+            const relatedNext = relatedSection.querySelector('[data-house-related-next]');
+            const relatedHeading = relatedSection.querySelector('.house-related-heading');
+            const relatedPerPage = 6;
+            let relatedCurrentPage = 1;
+            const updateRelatedPage = (page, scrollToHeading = false) => {
+                const cards = Array.from(relatedGrid.children);
+                const pageCount = Math.ceil(cards.length / relatedPerPage);
+                relatedCurrentPage = Math.min(Math.max(page, 1), pageCount);
+                const firstCard = (relatedCurrentPage - 1) * relatedPerPage;
+
+                cards.forEach((card, index) => {
+                    card.hidden = index < firstCard || index >= firstCard + relatedPerPage;
+                });
+                if (relatedPagination) {
+                    relatedPagination.hidden = pageCount <= 1;
+                }
+                if (relatedPageNumbers) {
+                    relatedPageNumbers.replaceChildren();
+                    for (let pageNumber = 1; pageNumber <= pageCount; pageNumber += 1) {
+                        const pageButton = document.createElement('button');
+                        pageButton.type = 'button';
+                        pageButton.className = 'estimate-house-samples-page-number';
+                        pageButton.textContent = String(pageNumber);
+                        pageButton.setAttribute('aria-label', `Trang ${pageNumber}`);
+                        pageButton.setAttribute('aria-current', String(pageNumber === relatedCurrentPage ? 'page' : 'false'));
+                        pageButton.addEventListener('click', () => updateRelatedPage(pageNumber, true));
+                        relatedPageNumbers.append(pageButton);
+                    }
+                }
+                if (relatedPrevious) {
+                    relatedPrevious.disabled = relatedCurrentPage === 1;
+                }
+                if (relatedNext) {
+                    relatedNext.disabled = relatedCurrentPage === pageCount;
+                }
+
+                if (scrollToHeading && relatedHeading) {
+                    window.requestAnimationFrame(() => {
+                        const headerHeight = document.querySelector('header')?.getBoundingClientRect().height || 0;
+                        const headingPosition = relatedHeading.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
+                        window.scrollTo({ top: headingPosition, behavior: 'smooth' });
+                    });
+                }
+            };
+
+            relatedPrevious?.addEventListener('click', () => updateRelatedPage(relatedCurrentPage - 1, true));
+            relatedNext?.addEventListener('click', () => updateRelatedPage(relatedCurrentPage + 1, true));
+            updateRelatedPage(1);
+            relatedSection.hidden = false;
+        }
+
+        const gallery = houseDetailPage.querySelector('[data-house-gallery]');
+        const galleryMain = gallery?.querySelector('[data-house-gallery-main]');
+        const galleryImage = gallery?.querySelector('[data-house-gallery-image]');
+        const galleryThumbnailsContainer = gallery?.querySelector('.house-detail-gallery-thumbnails');
+        const galleryThumbnails = Array.from(gallery?.querySelectorAll('[data-house-gallery-thumbnail]') || []);
+        const galleryPrevious = gallery?.querySelector('[data-house-gallery-previous]');
+        const galleryNext = gallery?.querySelector('[data-house-gallery-next]');
+        const galleryCount = gallery?.querySelector('[data-house-gallery-count]');
+        const galleryControls = gallery?.querySelector('.house-detail-gallery-controls');
+        const detailBackLink = houseDetailPage.querySelector('[data-house-detail-back]');
+        const estimateResetLink = houseDetailPage.querySelector('[data-house-estimate-reset]');
+        let currentGalleryImage = Math.max(0, galleryThumbnails.findIndex((thumbnail) => thumbnail.classList.contains('is-active')));
+
+        if (galleryPrevious && galleryNext && galleryThumbnails.length < 2) {
+            galleryPrevious.hidden = true;
+            galleryNext.hidden = true;
+            galleryControls?.classList.add('is-single-image');
+        }
+
+        detailBackLink?.addEventListener('click', (event) => {
+            const previousPage = document.referrer ? new URL(document.referrer) : null;
+            if (previousPage?.origin === window.location.origin
+                && previousPage.pathname.endsWith('/index.html')
+                && history.length > 1) {
+                event.preventDefault();
+                history.back();
+                return;
+            }
+
+            const savedEstimate = JSON.parse(sessionStorage.getItem('house-estimate-return-state') || 'null');
+            if (savedEstimate?.url
+                && savedEstimate.page === new URL(savedEstimate.url).pathname
+                && Date.now() - savedEstimate.savedAt <= 10 * 60 * 1000) {
+                event.preventDefault();
+                const returnUrl = new URL(savedEstimate.url);
+                returnUrl.hash = '';
+                returnUrl.searchParams.set('restore-du-toan', '1');
+                window.location.href = returnUrl.href;
+            }
+        });
+        estimateResetLink?.addEventListener('click', () => {
+            sessionStorage.removeItem('house-estimate-return-state');
+        });
+
+        const showGalleryImage = (index) => {
+            if (!galleryImage || galleryThumbnails.length === 0) return;
+
+            currentGalleryImage = (index + galleryThumbnails.length) % galleryThumbnails.length;
+            const activeThumbnail = galleryThumbnails[currentGalleryImage];
+            galleryImage.src = activeThumbnail.dataset.image;
+            galleryImage.alt = activeThumbnail.dataset.alt || `Ảnh minh họa ${currentGalleryImage + 1}`;
+            if (galleryCount) {
+                galleryCount.textContent = `${String(currentGalleryImage + 1).padStart(2, '0')} / ${String(galleryThumbnails.length).padStart(2, '0')}`;
+            }
+
+            galleryThumbnails.forEach((thumbnail, thumbnailIndex) => {
+                const isActive = thumbnailIndex === currentGalleryImage;
+                thumbnail.classList.toggle('is-active', isActive);
+                thumbnail.setAttribute('aria-pressed', String(isActive));
+            });
+
+            if (galleryThumbnailsContainer) {
+                const containerBounds = galleryThumbnailsContainer.getBoundingClientRect();
+                const thumbnailBounds = galleryThumbnails[currentGalleryImage].getBoundingClientRect();
+                const thumbnailLeft = thumbnailBounds.left - containerBounds.left + galleryThumbnailsContainer.scrollLeft;
+                const thumbnailRight = thumbnailLeft + thumbnailBounds.width;
+                const isMiddleThumbnail = currentGalleryImage > 0
+                    && currentGalleryImage < galleryThumbnails.length - 1;
+                const scrollLeft = isMiddleThumbnail
+                    ? Math.min(
+                        Math.max(0, thumbnailLeft + (thumbnailBounds.width / 2) - (galleryThumbnailsContainer.clientWidth / 2)),
+                        galleryThumbnailsContainer.scrollWidth - galleryThumbnailsContainer.clientWidth
+                    )
+                    : thumbnailLeft < galleryThumbnailsContainer.scrollLeft
+                        ? thumbnailLeft
+                        : thumbnailRight > galleryThumbnailsContainer.scrollLeft + galleryThumbnailsContainer.clientWidth
+                            ? thumbnailRight - galleryThumbnailsContainer.clientWidth
+                            : galleryThumbnailsContainer.scrollLeft;
+
+                if (scrollLeft !== galleryThumbnailsContainer.scrollLeft) {
+                    galleryThumbnailsContainer.scrollTo({
+                        left: scrollLeft,
+                        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'
+                    });
+                }
+            }
+        };
+
+        galleryThumbnails.forEach((thumbnail, index) => {
+            thumbnail.addEventListener('click', () => showGalleryImage(index));
+        });
+        galleryPrevious?.addEventListener('click', () => showGalleryImage(currentGalleryImage - 1));
+        galleryNext?.addEventListener('click', () => showGalleryImage(currentGalleryImage + 1));
+
+        if (galleryMain) {
+            let pointerStartX = null;
+            galleryMain.addEventListener('pointerdown', (event) => {
+                pointerStartX = event.clientX;
+            });
+            galleryMain.addEventListener('pointerup', (event) => {
+                if (pointerStartX === null) return;
+                const swipeDistance = event.clientX - pointerStartX;
+                pointerStartX = null;
+                if (Math.abs(swipeDistance) < 45) return;
+                showGalleryImage(currentGalleryImage + (swipeDistance < 0 ? 1 : -1));
+            });
+            galleryMain.addEventListener('pointercancel', () => {
+                pointerStartX = null;
+            });
+            galleryMain.addEventListener('keydown', (event) => {
+                if (event.key === 'ArrowLeft') {
+                    event.preventDefault();
+                    showGalleryImage(currentGalleryImage - 1);
+                } else if (event.key === 'ArrowRight') {
+                    event.preventDefault();
+                    showGalleryImage(currentGalleryImage + 1);
+                }
+            });
+        }
+    }
     const catalogReturnKey = 'catalog-return-position';
     window.addEventListener('pageshow', (event) => {
         const navigationType = performance.getEntriesByType('navigation')[0]?.type;
@@ -556,10 +797,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const estimateTotal = document.querySelector('#estimate-total');
     const estimateArea = document.querySelector('#estimate-area');
     const estimateFloorDetail = document.querySelector('#estimate-floor-detail');
+    const estimateMezzanineRow = document.querySelector('#estimate-mezzanine-row');
+    const estimateMezzanineDetail = document.querySelector('#estimate-mezzanine-detail');
     const estimateFoundationDetail = document.querySelector('#estimate-foundation-detail');
     const estimateRoofDetail = document.querySelector('#estimate-roof-detail');
     const estimateFloorArea = document.querySelector('#estimate-floor-area');
     const estimateUnitPrice = document.querySelector('#estimate-unit-price');
+    const estimateHouseSamples = document.querySelector('#estimate-house-samples');
+    const estimateHouseSamplesBudget = document.querySelector('#estimate-house-samples-budget');
+    const houseEstimateReturnKey = 'house-estimate-return-state';
     const promoCountdown = document.querySelector('[data-promo-countdown]');
     const promoHours = document.querySelector('[data-promo-hours]');
     const promoMinutes = document.querySelector('[data-promo-minutes]');
@@ -569,12 +815,140 @@ document.addEventListener('DOMContentLoaded', () => {
     const packageTableWrap = document.querySelector('#estimate-package-table-wrap');
     const packageNotes = document.querySelector('#estimate-package-notes');
     const constructionPreview = document.querySelector('#estimate-construction-preview');
-    const constructionSummary = document.querySelector('#estimate-construction-summary');
     const constructionStatus = document.querySelector('#estimate-construction-status');
 
     if (packagePreview) {
         packagePreview.hidden = true;
     }
+    if (estimateHouseSamples) {
+        estimateHouseSamples.hidden = true;
+    }
+    const houseSamplesGrid = document.querySelector('.estimate-house-samples-grid');
+    const houseSamplesPagination = document.querySelector('.estimate-house-samples-pagination');
+    const houseSamplesPageNumbers = document.querySelector('.estimate-house-samples-page-numbers');
+    const houseSamplesPrevious = document.querySelector('[data-house-page-previous]');
+    const houseSamplesNext = document.querySelector('[data-house-page-next]');
+    let isRestoringHouseEstimate = false;
+    if (estimateForm) {
+        window.addEventListener('pageshow', (event) => {
+            const savedState = JSON.parse(sessionStorage.getItem(houseEstimateReturnKey) || 'null');
+            const navigationType = performance.getEntriesByType('navigation')[0]?.type;
+            const isExplicitRestore = new URLSearchParams(window.location.search).get('restore-du-toan') === '1';
+            if (!savedState
+                || savedState.page !== window.location.pathname
+                || Date.now() - savedState.savedAt > 10 * 60 * 1000
+                || (navigationType !== 'back_forward' && !event.persisted && !isExplicitRestore)) return;
+
+            sessionStorage.removeItem(houseEstimateReturnKey);
+            if (event.persisted) {
+                window.requestAnimationFrame(() => {
+                    window.requestAnimationFrame(() => {
+                        window.cancelAnimationFrame(scrollAnimationId);
+                        scrollAnimationId = 0;
+                        window.scrollTo({ top: savedState.scrollY, left: 0, behavior: 'instant' });
+                    });
+                });
+                return;
+            }
+            if (isExplicitRestore) {
+                const returnUrl = new URL(window.location.href);
+                returnUrl.searchParams.delete('restore-du-toan');
+                history.replaceState(history.state, '', `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`);
+            }
+
+            const controls = Array.from(estimateForm.elements).filter((control) => control.name);
+            if (controls.length !== savedState.controls.length) return;
+            isRestoringHouseEstimate = true;
+            controls.forEach((control, index) => {
+                const savedControl = savedState.controls[index];
+                if (control.name !== savedControl.name || control.type !== savedControl.type) return;
+                if (control.type === 'checkbox' || control.type === 'radio') {
+                    control.checked = savedControl.checked;
+                } else {
+                    control.value = savedControl.value;
+                }
+                control.dispatchEvent(new Event('input', { bubbles: true }));
+                control.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            isRestoringHouseEstimate = false;
+
+            estimateForm.requestSubmit();
+            window.requestAnimationFrame(() => {
+                window.requestAnimationFrame(() => {
+                    window.cancelAnimationFrame(scrollAnimationId);
+                    scrollAnimationId = 0;
+                    window.scrollTo({ top: savedState.scrollY, left: 0, behavior: 'instant' });
+                });
+            });
+        });
+
+        houseSamplesGrid?.querySelectorAll('.estimate-house-sample-detail').forEach((link) => {
+            link.addEventListener('click', () => {
+                const controls = Array.from(estimateForm.elements).filter((control) => control.name);
+                sessionStorage.setItem(houseEstimateReturnKey, JSON.stringify({
+                    page: window.location.pathname,
+                    scrollY: window.scrollY,
+                    savedAt: Date.now(),
+                    url: window.location.href,
+                    controls: controls.map((control) => ({
+                        name: control.name,
+                        type: control.type,
+                        value: control.value,
+                        checked: control.checked
+                    }))
+                }));
+            });
+        });
+    }
+    const houseSamplesPerPage = 9;
+    let houseSamplesCurrentPage = 1;
+    const updateHouseSamplesPage = (page = houseSamplesCurrentPage, scrollToHeading = false) => {
+        if (!houseSamplesGrid || !houseSamplesPagination || !houseSamplesPageNumbers) {
+            return;
+        }
+        const samples = Array.from(houseSamplesGrid.querySelectorAll('.estimate-house-sample'));
+        const pageCount = Math.ceil(samples.length / houseSamplesPerPage);
+        houseSamplesCurrentPage = Math.min(Math.max(page, 1), Math.max(pageCount, 1));
+        const firstSample = (houseSamplesCurrentPage - 1) * houseSamplesPerPage;
+
+        samples.forEach((sample, index) => {
+            sample.hidden = index < firstSample || index >= firstSample + houseSamplesPerPage;
+        });
+
+        houseSamplesPagination.hidden = pageCount <= 1;
+        houseSamplesPageNumbers.replaceChildren();
+        for (let pageNumber = 1; pageNumber <= pageCount; pageNumber += 1) {
+            const pageButton = document.createElement('button');
+            pageButton.type = 'button';
+            pageButton.className = 'estimate-house-samples-page-number';
+            pageButton.textContent = String(pageNumber);
+            pageButton.setAttribute('aria-label', `Trang ${pageNumber}`);
+            pageButton.setAttribute('aria-current', pageNumber === houseSamplesCurrentPage ? 'page' : 'false');
+            pageButton.addEventListener('click', () => updateHouseSamplesPage(pageNumber, true));
+            houseSamplesPageNumbers.appendChild(pageButton);
+        }
+
+        if (houseSamplesPrevious) {
+            houseSamplesPrevious.disabled = houseSamplesCurrentPage === 1;
+        }
+        if (houseSamplesNext) {
+            houseSamplesNext.disabled = houseSamplesCurrentPage === pageCount;
+        }
+
+        if (scrollToHeading && estimateHouseSamples) {
+            window.requestAnimationFrame(() => {
+                const heading = estimateHouseSamples.querySelector('.estimate-house-samples-heading');
+                if (!heading) return;
+
+                const headerHeight = document.querySelector('header')?.getBoundingClientRect().height || 0;
+                const headingPosition = heading.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
+                smoothScrollTo(headingPosition, 500);
+            });
+        }
+    };
+    houseSamplesPrevious?.addEventListener('click', () => updateHouseSamplesPage(houseSamplesCurrentPage - 1, true));
+    houseSamplesNext?.addEventListener('click', () => updateHouseSamplesPage(houseSamplesCurrentPage + 1, true));
+    updateHouseSamplesPage();
     if (packageTableWrap) {
         packageTableWrap.hidden = true;
     }
@@ -1363,6 +1737,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (estimateForm && estimateTotal && estimateArea && estimateFloorDetail && estimateFoundationDetail && estimateRoofDetail && estimateFloorArea && estimateUnitPrice) {
         const groundFloorsField = estimateForm.elements.groundFloors;
         const upperFloorsField = estimateForm.elements.upperFloors;
+        const styleField = estimateForm.elements.style;
+        const mezzanineHint = document.querySelector('#estimate-mezzanine-hint');
         const roofField = estimateForm.elements.roof;
         const widthField = estimateForm.elements.width;
         const lengthField = estimateForm.elements.namedItem('length');
@@ -1378,6 +1754,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const extraPanel = document.querySelector('#estimate-extra-panel');
         const estimateReset = document.querySelector('#estimate-reset');
         const formatArea = (value) => new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 }).format(value);
+        const hideEstimateHouseSamples = () => {
+            if (estimateHouseSamples) {
+                estimateHouseSamples.hidden = true;
+            }
+        };
+        const clearEstimateResult = (message) => {
+            estimateTotal.textContent = '--';
+            estimateArea.textContent = message;
+            estimateFloorDetail.textContent = '--';
+            if (estimateMezzanineDetail) {
+                estimateMezzanineDetail.textContent = '--';
+            }
+            if (estimateMezzanineRow) {
+                estimateMezzanineRow.hidden = true;
+            }
+            estimateFoundationDetail.textContent = '--';
+            estimateRoofDetail.textContent = '--';
+            estimateFloorArea.textContent = '--';
+            estimateUnitPrice.textContent = '--';
+            if (extraSummaryArea) {
+                extraSummaryArea.textContent = '--';
+            }
+        };
         let constructionSimulation = null;
         let constructionSimulationLoad = null;
         let constructionPreviewRequest = 0;
@@ -1411,7 +1810,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return constructionSimulationLoad;
         };
         const updateConstructionPreview = async (unitPrice) => {
-            if (!constructionPreview || !constructionSummary || !constructionStatus) {
+            if (!constructionPreview || !constructionStatus) {
                 return;
             }
             if (!hasCalculatedPackage || !packagePreview || packagePreview.hidden) {
@@ -1432,12 +1831,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? unitPrice
                 : finishField.value === 'custom' ? customPrice : Number(finishField.value);
             const hasPrice = Number.isFinite(currentPrice) && currentPrice > 0;
-            const formattedPrice = hasPrice
-                ? ` · ${new Intl.NumberFormat('vi-VN').format(Math.round(currentPrice))} đ/m²`
-                : '';
             constructionStatus.hidden = false;
             constructionStatus.textContent = 'Đang tải mô hình thi công 3D…';
-            constructionSummary.textContent = `Mô phỏng tham khảo cho ${packageName}${formattedPrice}; thời gian được rút gọn, kết cấu và trình tự đổ dầm/sàn chỉ mang tính minh họa. Thi công thực tế, mạch ngừng và tháo cốp pha/chống phải theo hồ sơ được duyệt, kết quả kiểm tra cường độ và chỉ dẫn kỹ sư. Vật tư hoàn thiện theo gói đã chọn; mô phỏng không thay thế hồ sơ thi công.`;
             try {
                 await ensureConstructionSimulation();
                 if (request !== constructionPreviewRequest) {
@@ -1590,6 +1985,10 @@ document.addEventListener('DOMContentLoaded', () => {
             updateExtraAreaDisplay();
         });
         foundationField.addEventListener('change', updateEstimateOptions);
+        const updateMezzanineHint = () => {
+            mezzanineHint.hidden = styleField.value !== 'mezzanine';
+        };
+        updateMezzanineHint();
         finishField.addEventListener('change', () => {
             updateCustomPriceState();
             hasCalculatedPackage = false;
@@ -1597,7 +1996,8 @@ document.addEventListener('DOMContentLoaded', () => {
             updateConstructionPreview();
         });
         estimateForm.addEventListener('change', (event) => {
-            if (!window.matchMedia('(min-width: 769px)').matches
+            if (isRestoringHouseEstimate
+                || !window.matchMedia('(min-width: 769px)').matches
                 || !(event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement)
                 || !event.target.closest('.estimate-grid')
                 || event.target.disabled
@@ -1665,27 +2065,40 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCustomPriceState();
         updateEstimateOptions();
         updateConstructionPreview();
-        estimateReset?.addEventListener('click', () => {
-            estimateForm.reset();
-            groundFloorsField.value = '1';
-            estimateTotal.textContent = '--';
-            estimateArea.textContent = 'Nhập thông tin để bắt đầu tính.';
-            estimateFloorDetail.textContent = '--';
-            estimateFoundationDetail.textContent = '--';
-            estimateRoofDetail.textContent = '--';
-            estimateFloorArea.textContent = '--';
-            estimateUnitPrice.textContent = '--';
-            if (extraSummaryArea) {
-                extraSummaryArea.textContent = '--';
+        estimateForm.addEventListener('input', hideEstimateHouseSamples);
+        estimateForm.addEventListener('change', hideEstimateHouseSamples);
+        styleField.addEventListener('change', () => {
+            updateMezzanineHint();
+            if (estimateMezzanineRow) {
+                estimateMezzanineRow.hidden = true;
             }
+            clearEstimateResult('Nhập thông tin để bắt đầu tính.');
+            hasCalculatedPackage = false;
+            updatePackagePreview();
+            updateConstructionPreview();
+        });
+        const resetEstimate = () => {
+            sessionStorage.removeItem(houseEstimateReturnKey);
+            estimateForm.reset();
+            hideEstimateHouseSamples();
+            groundFloorsField.value = '1';
+            clearEstimateResult('Nhập thông tin để bắt đầu tính.');
             customPriceDigitsBuffer = '';
             updateCustomPriceState();
+            updateMezzanineHint();
             updateExtraAreaDisplay();
             hasCalculatedPackage = false;
             updatePackagePreview();
             updateConstructionPreview();
             updateEstimateOptions();
-        });
+        };
+        estimateReset?.addEventListener('click', resetEstimate);
+        const pageUrl = new URL(window.location.href);
+        if (pageUrl.searchParams.get('reset-du-toan') === '1') {
+            resetEstimate();
+            pageUrl.searchParams.delete('reset-du-toan');
+            history.replaceState(history.state, '', `${pageUrl.pathname}${pageUrl.search}${pageUrl.hash}`);
+        }
         estimateForm.addEventListener('submit', (event) => {
             event.preventDefault();
             const formData = new FormData(estimateForm);
@@ -1703,35 +2116,51 @@ document.addEventListener('DOMContentLoaded', () => {
             const shouldUseCustomPrice = finishValue === 'custom';
             const unitPrice = shouldUseCustomPrice && Number.isFinite(customFinishPrice) && customFinishPrice > 0 ? customFinishPrice : selectedPackagePrice;
             const style = formData.get('style');
+            const isMezzanine = style === 'mezzanine';
             const includeExtra = includeExtraArea?.checked;
             const extraArea = includeExtra ? getAdditionalArea() : 0;
 
-            if (![length, width, floors, roofRate, foundationRate, unitPrice].every(Number.isFinite) || floors <= 0 || !style) {
+            if (![length, width, floors, roofRate, foundationRate, unitPrice].every(Number.isFinite)
+                || length <= 0
+                || width <= 0
+                || floors <= 0
+                || !style
+            ) {
                 hasCalculatedPackage = false;
+                hideEstimateHouseSamples();
                 updatePackagePreview();
                 updateConstructionPreview();
-                estimateTotal.textContent = '--';
-                estimateArea.textContent = 'Vui lòng điền và chọn đầy đủ thông tin để tính, không cần tải lại trang.';
-                estimateFloorDetail.textContent = '--';
-                estimateFoundationDetail.textContent = '--';
-                estimateRoofDetail.textContent = '--';
-                estimateFloorArea.textContent = '--';
-                estimateUnitPrice.textContent = '--';
+                clearEstimateResult('Vui lòng điền và chọn đầy đủ thông tin để tính, không cần tải lại trang.');
                 return;
             }
 
             const footprint = length * width;
             const floorArea = footprint * floors;
+            const livingRoomDepth = Math.min(length, Math.max(3, length * 0.3));
+            const mezzanineDepth = isMezzanine ? Math.max(0, length - livingRoomDepth) : 0;
+            const convertedMezzanineArea = width * mezzanineDepth;
+            const reservedLivingRoomArea = width * livingRoomDepth;
             const roofArea = footprint * roofRate;
             const foundationArea = footprint * foundationRate;
-            const convertedArea = Number((floorArea + foundationArea + roofArea + extraArea).toFixed(2));
+            const convertedArea = Number((floorArea + convertedMezzanineArea + foundationArea + roofArea + extraArea).toFixed(2));
             const estimatedTotal = convertedArea * unitPrice;
             const formatNumber = (value) => new Intl.NumberFormat('vi-VN').format(Math.round(value));
             const formatPercent = (value) => `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(value * 100)}%`;
 
             estimateTotal.textContent = `${formatNumber(estimatedTotal)} đ`;
+            if (estimateHouseSamples && estimateHouseSamplesBudget) {
+                estimateHouseSamplesBudget.textContent = `${formatNumber(estimatedTotal)} đ`;
+                estimateHouseSamples.hidden = false;
+                updateHouseSamplesPage(1);
+            }
             estimateArea.textContent = `Diện tích xây dựng cơ bản: ${formatArea(footprint)} m²`;
             estimateFloorDetail.textContent = `${formatArea(footprint)} × ${floors} tầng = ${formatArea(floorArea)} m²`;
+            if (estimateMezzanineDetail && estimateMezzanineRow) {
+                estimateMezzanineRow.hidden = !isMezzanine;
+                estimateMezzanineDetail.textContent = isMezzanine
+                    ? `${formatArea(convertedMezzanineArea)} m² (${formatArea(width)}×${formatArea(mezzanineDepth)} m); thông tầng ${formatArea(reservedLivingRoomArea)} m² (${formatArea(width)}×${formatArea(livingRoomDepth)} m)`
+                    : '--';
+            }
             estimateFoundationDetail.textContent = `${formatArea(footprint)} × ${formatPercent(foundationRate)} = ${formatArea(foundationArea)} m²`;
             estimateRoofDetail.textContent = `${formatArea(footprint)} × ${formatPercent(roofRate)} = ${formatArea(roofArea)} m²`;
             if (extraSummaryArea) {
