@@ -1,6 +1,153 @@
-window.createConstructionSimulation = (root) => {
+const TIE_BEAM_STEP_KEYS = ["Đào rãnh + lót giằng", "Cốp pha giằng", "Thép giằng móng", "Đổ BT giằng móng"];
+const FOUNDATION_TYPES = new Set(["isolated", "strip", "pile"]);
+const STEP_DISPLAY_TITLES = new Map([
+    ["Cốp pha + thép dầm sàn L1", "Lắp dựng cốp pha và cốt thép dầm, sàn tầng 2 (lầu 1)"],
+    ["Thép dầm sàn L1", "Lắp dựng cốt thép dầm và sàn tầng 2 (lầu 1)"],
+    ["Đổ BT dầm sàn L1", "Đổ bê tông dầm và sàn tầng 2 (lầu 1)"],
+    ["Cột lầu 1", "Thi công cột tầng 2 (lầu 1): cốt thép, ván khuôn và đổ bê tông đầm, dùi"],
+    ["Xây tường L1", "Xây tường tầng 2 (lầu 1)"],
+    ["Cột mái + sườn thép mái", "Thi công cột mái, lắp dựng kèo, xà gồ thép hộp"]
+]);
+const STEP_DISPLAY_LABELS = new Map([
+    ["Cốp pha + thép dầm sàn L1", "Cốp pha dầm sàn tầng 2 (lầu 1)"],
+    ["Thép dầm sàn L1", "Thép dầm sàn tầng 2 (lầu 1)"],
+    ["Đổ BT dầm sàn L1", "Bê tông dầm sàn tầng 2 (lầu 1)"],
+    ["Cột lầu 1", "Cột tầng 2 (lầu 1)"],
+    ["Xây tường L1", "Tường tầng 2 (lầu 1)"],
+    ["Cột mái + sườn thép mái", "Kèo, xà gồ thép mái"]
+]);
+const COLUMN_JOINT_INSTRUCTION = "Vệ sinh sạch chân cột chờ, loại bỏ hồ/bê tông yếu và làm ẩm; ngay trước khi đổ, quét hoặc tưới lớp hồ dầu (nước xi măng) tại tiếp giáp bê tông cũ–mới để kết nối.";
+const COLUMN_ADDITIVE_INSTRUCTION = "Dùng cấp phối bê tông cột theo hồ sơ thiết kế; không dùng phụ gia chống thấm cho bê tông cột.";
+const WALL_TOP_INSTRUCTION = "Nếu xây tường trước khi đổ bê tông dầm sàn lầu hoặc mái, khóa đỉnh tường bằng gạch thẻ xây xéo; thi công theo chi tiết hồ sơ thiết kế và hướng dẫn giám sát.";
+
+function getConstructionStepLabel(stepKey) {
+    return STEP_DISPLAY_LABELS.get(stepKey) || stepKey;
+}
+
+function updateConstructionStep(step) {
+    const [title, key, standards, method, quality] = step;
+    let updatedMethod = [...method];
+    let updatedQuality = [...quality];
+    const columnStepKeys = ["Đổ BT cột trệt", "Cột lầu 1", "Cột mái + sườn thép mái"];
+
+    if (columnStepKeys.includes(key)) {
+        updatedMethod = updatedMethod
+            .map(item => item.replace(/\s*\(cần(?:\s+thì|\s+thiết)? dùng R14 và phụ gia chống thấm B8\)/i, " theo cấp phối được duyệt"))
+            .filter(item => !/xử lý kết nối bê tông cũ và mới/i.test(item))
+            .map(item => item.replace(/,\s*(?:xử lý )?(?:mạch ngừng )?[^,.]*hồ dầu[^,.]*(?=[,.]|$)/i, ""))
+            .filter(item => !/phụ gia chống thấm|\bB8\b/i.test(item));
+        updatedMethod.unshift(COLUMN_JOINT_INSTRUCTION);
+        updatedMethod.push(COLUMN_ADDITIVE_INSTRUCTION);
+        if (key === "Cột lầu 1") {
+            updatedMethod.push("Tên tầng và cao độ thực hiện theo hồ sơ thiết kế; tầng ngay trên tầng trệt thường gọi là tầng 2 ở miền Bắc hoặc lầu 1 ở miền Nam.");
+        }
+    }
+
+    if (key === "Xây tường trệt" || key === "Xây tường L1") {
+        updatedMethod = updatedMethod.map(item => item
+            .replace(/;\s*xây đến dầm thì khóa đỉnh tường bằng 3 hàng gạch thẻ\.?/i, ".")
+            .replace(/,?\s*khóa đỉnh tường\.?/i, "."));
+        updatedMethod.push(WALL_TOP_INSTRUCTION);
+    }
+
+    const displayTitle = STEP_DISPLAY_TITLES.get(key) || title;
+    if (key === "Cột mái + sườn thép mái") {
+        updatedMethod = [
+            ...updatedMethod.filter(item => !/Chia cột mái thành|Gia công kèo|Dựng kèo thép|Lắp xà gồ|Lắp hệ litô/i.test(item)),
+            "Chia cột mái theo hình khối và cao độ trong hồ sơ thiết kế; bố trí chi tiết chờ để liên kết hệ kèo theo bản vẽ kết cấu.",
+            "Nếu mái ngói hoặc tole theo thiết kế, gia công hệ kèo và xà gồ bằng thép hộp theo bản vẽ; xử lý chống gỉ các vị trí cắt, hàn.",
+            "Lắp dựng kèo thép hộp và liên kết với kết cấu bê tông theo chi tiết hồ sơ thiết kế được duyệt; kiểm tra độ thẳng, độ dốc và khoảng cách kèo.",
+            "Lắp xà gồ thép hộp đúng bước và độ dốc mái theo bản vẽ; giằng ổn định hệ khung theo thiết kế.",
+            "Nếu lợp ngói, lắp hệ litô theo bước ngói; nếu lợp tole, hoàn thiện xà gồ theo thiết kế trước khi lợp."
+        ];
+        updatedQuality = ["Kiểm tra tim cột, độ thẳng đứng và cao độ đỉnh cột; mẫu nén, độ võng, độ dốc, khoảng cách và liên kết hệ kèo, lớp bảo vệ và chống gỉ theo hồ sơ thiết kế trước khi lợp."];
+    }
+
+    if (key === "Chống thấm") {
+        updatedMethod = updatedMethod.map(item => item.replace(
+            /dựng sườn thép và lợp mái/i,
+            "lắp dựng hệ kèo, xà gồ thép hộp (nếu mái ngói hoặc tole theo thiết kế) và lợp mái"
+        ));
+        updatedQuality = updatedQuality.map(item => item.replace(
+            /trước khi dựng sườn thép mái/i,
+            "trước khi lắp dựng hệ kèo, xà gồ thép hộp theo thiết kế"
+        ));
+    }
+
+    return [
+        displayTitle,
+        key,
+        standards,
+        updatedMethod,
+        updatedQuality
+    ];
+}
+
+function buildConstructionDisplaySchedule(sourceSteps, foundationType) {
+    if (!FOUNDATION_TYPES.has(foundationType)) {
+        throw new Error(`Loại móng không hợp lệ: ${foundationType}.`);
+    }
+
+    const steps = sourceSteps.map(updateConstructionStep);
+    const pileStepIndex = steps.findIndex(step => step[1] === "Ép cọc");
+    const excavationStep = steps.find(step => step[1] === "Đào móng");
+    const blindingStep = steps.find(step => step[1] === "BT lót hố");
+    const tieBeamStepStart = steps.findIndex(step => step[1] === TIE_BEAM_STEP_KEYS[0]);
+    if (pileStepIndex < 0 || !excavationStep || !blindingStep || tieBeamStepStart < 0
+        || TIE_BEAM_STEP_KEYS.some((key, offset) => steps[tieBeamStepStart + offset]?.[1] !== key)) {
+        throw new Error("Không tìm thấy đủ các bước móng và giằng móng theo đúng thứ tự.");
+    }
+
+    if (foundationType === "pile") {
+        blindingStep[0] = "Xử lý đầu cọc và đổ bê tông lót đáy đài móng";
+        const pileHeadInstruction = "Cắt và đục phần bê tông đầu cọc đến cao độ thiết kế, để đầu cọc nhô cao hơn mặt bê tông lót đài móng 100–150 mm; không đục sát lớp bê tông lót. Làm sạch đầu cọc, để lộ thép neo theo chi tiết thiết kế.";
+        blindingStep[3] = [pileHeadInstruction, ...blindingStep[3].filter(item => !/đầu cọc|cọc giữ nguyên/i.test(item))];
+    } else {
+        excavationStep[3] = excavationStep[3].filter(item => !/cọc/i.test(item));
+        blindingStep[0] = "Đổ bê tông lót đáy hố móng";
+        blindingStep[3] = blindingStep[3].filter(item => !/cọc/i.test(item));
+    }
+
+    const tieBeamSteps = steps.slice(tieBeamStepStart, tieBeamStepStart + TIE_BEAM_STEP_KEYS.length);
+    const tieBeamDisplayStep = [
+        "Thi công giằng móng: đào rãnh, lắp cốp pha, lắp thép và đổ bê tông",
+        "Thi công giằng móng",
+        [...new Set(tieBeamSteps.flatMap(step => step[2].split(" · ")))].join(" · "),
+        tieBeamSteps.flatMap(step => step[3]),
+        tieBeamSteps.flatMap(step => step[4])
+    ];
+    const displaySteps = [];
+    const simulationStepIndexes = [];
+    let tieBeamDisplayIndex = -1;
+
+    for (let rawStep = 0; rawStep < steps.length;) {
+        if (foundationType !== "pile" && rawStep === pileStepIndex) {
+            rawStep++;
+            continue;
+        }
+        if (rawStep === tieBeamStepStart) {
+            tieBeamDisplayIndex = displaySteps.length;
+            displaySteps.push(tieBeamDisplayStep);
+            simulationStepIndexes.push(TIE_BEAM_STEP_KEYS.map((_, offset) => tieBeamStepStart + offset));
+            rawStep += TIE_BEAM_STEP_KEYS.length;
+            continue;
+        }
+        displaySteps.push(steps[rawStep]);
+        simulationStepIndexes.push([rawStep]);
+        rawStep++;
+    }
+
+    return { displaySteps, simulationStepIndexes, tieBeamDisplayIndex };
+}
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { buildConstructionDisplaySchedule, getConstructionStepLabel };
+}
+
+if (typeof window !== "undefined") window.createConstructionSimulation = (root, foundationType = "isolated") => {
     const elementIds = { cv: "estimate-construction-canvas", tag: "estimate-construction-tag", steps: "estimate-construction-steps", panel: "estimate-construction-panel" };
     const $ = id => root.querySelector(`#${elementIds[id] || id}`);
+    let selectedFoundationType = foundationType;
     const FH = 3.4, W = 8, D = 12, hw = W / 2, hd = D / 2;
     const BT = "TCVN 4453:1995 · TCVN 5593:2012 · TCVN 5574:2018";
     const S = [
@@ -26,23 +173,23 @@ window.createConstructionSimulation = (root) => {
         ["Lợp ngói và xử lý khe tiếp giáp", "Lợp ngói", "Quy trình chống thấm bổ sung 2026", ["Ốp ngói (hoặc lợp tôn) lên hệ litô thép theo thiết kế, từ dưới lên, đúng độ dốc; úp nóc, diềm mái, máng xối kín nước.", "Khe giữa tường nhà và công trình liền kề: vệ sinh sạch, lắp thanh trương nở kín khe (đỉnh tường bằng nhau), rồi chống thấm theo quy trình.", "Đỉnh tường hai bên không bằng nhau: cắt rãnh sâu 1–2 cm trên tường bên cao, có độ nghiêng ngoài thấp hơn trong, lắp tole phẳng hoặc tấm inox ngàm vào rãnh, bắt đinh vít, chít keo silicon ngoài trời đầy rãnh.", "Mái che polycarbonate (nếu có): độ dốc trung bình 10 độ, mặt có decal quay lên, dùng nẹp nhôm chữ H, khoan mồi lỗ lớn hơn thân vít 3–5 mm, vít có ron cao su và nút chụp.", "Lắp tole, silicon vào khe giữa mái che và tường tương tự."], ["Kiểm tra tole cố định chắc, rãnh chít keo liền mạch; thử bằng vòi phun nước hoặc mưa; lập biên bản kèm ảnh."]],
         ["Lắp đặt điện nước âm", "Điện nước âm", "TCVN 4519:1988 · TCVN 9206:2012 · Quy trình cấp thoát nước (16/10/2025)", ["Ống PVC cho nước lạnh, PPR cho nước nóng. Trục đứng gồm 4 trục độc lập: thoát nước mưa, thoát sinh hoạt (Ø90–114), thoát phân (Ø114), thông hơi hầm tự hoại (Ø42); thoát ban công tối thiểu Ø60–90.", "Chuyển hướng bằng co lơi, co Y, co T cong; hạn chế co L, co T và đường ống gấp khúc. Độ dốc theo Bảng 2 TCVN 4519:1988 (Ø60 tiêu chuẩn 2,8%; Ø90 2,2%; Ø114 1,7%), trung bình tối thiểu 1–2%.", "Lắp phễu thu có quả cầu chắn rác; xi phông (con thỏ) cho ống thoát sàn; trục ngang dùng ty treo, cùm Omega; trục đứng dùng dây rút và nẹp.", "Cấp nước từ bồn xuống giảm dần đường kính, lắp van một chiều và ống thông hơi; rẽ nhánh từng tầng từ trục thẳng đứng; ống song song, vuông góc với sàn tường.", "Đầu chờ thiết bị lắp bít, không dùng băng keo, vỏ bao, nylon; lắp vòi nước lạnh cho vệ sinh, sân thượng, ban công, bồn hoa trệt kể cả khi bản vẽ không thể hiện.", "Dây điện lõi đồng luồn ống PVC âm tường, tách mạch riêng điều hòa, bình nóng lạnh; tủ điện có CB, chống giật, nối đất."], ["Thử áp lực: bít đầu chờ, xả khí, bơm nước theo dõi 30 phút không sụt quá 0,5 kg/cm²; niêm phong van theo dõi 24 giờ sụt dưới 1 kg/cm² thì đạt; sau đó mới xây hộp gen và chừa ô cửa thăm."]],
         ["Tô trát tường, trần và tam cấp", "Tô trát", "Quy trình trát tường (30/10/2025)", ["Chỉ trát sau khi xây xong khoảng 10–15 ngày (trường hợp gấp phải thống nhất, tuyệt đối không dưới 2 ngày); đục bỏ bê tông, hồ thừa; tường khô thì tưới ẩm vừa đủ.", "Chỗ lắp hệ thống âm tường, tiếp giáp tường với cột dầm, góc lanh tô cửa đóng lưới mắt cáo chống nứt, phủ mỗi cạnh ít nhất 150 mm.", "Đắp mốc chính, mốc phụ, làm dải mốc. Vữa mác 75: 1 bao xi măng 50 kg + 12 thùng cát 18 lít + 3 thùng nước (thực tế giảm còn 11 thùng cát để dẻo, bám dính tốt); chỗ cần chống thấm dùng mác 100 (1 bao + 9 thùng cát + 2 thùng nước).", "Trát từ trên xuống, trần dầm trước tường cột; bề mặt bê tông quét hồ dầu; cán phẳng bằng thước tầm, xoa nhẵn nhiều lần, quét bỏ cát thừa.", "Trát 2 lớp cách nhau 3–4 giờ, mỗi lớp không quá 8 mm, tổng không quá 20 mm.", "Trát phẳng cả mặt đứng và mặt bậc tam cấp; hoàn thiện bậc, cổ bậc, cạnh mũi bậc rồi bảo dưỡng ẩm.", "Bệ cửa sổ trát hèm ngăn nước mưa, bệ cửa và đầu tường hồi, lan can tạo dốc thoát nước; phun nước giữ ẩm 2–3 ngày."], ["Nghiệm thu: phẳng, thẳng đứng, góc vuông, gờ chỉ sắc cạnh; gõ không bộp, không nứt chân chim; tam cấp phẳng và cạnh bậc thẳng."]],
-        ["Chống thấm sàn mái, sân thượng, ban công", "Chống thấm", "Quy trình chống thấm 2025–2026 · TCVN 5718:1993", ["Làm sạch bề mặt, xử lý góc cạnh, cổ ống (thanh trương nở đã đặt khi đổ sàn), phễu thu.", "Chống thấm gốc xi măng polymer nhiều lớp, quét chéo nhau, lật cao chân tường và chân cột mái tối thiểu 30 cm.", "Ngâm nước thử 24–48 giờ ở sàn mái, sân thượng, ban công, sê nô, sàn bồn nước, bồn hoa trên cao để phát hiện thiếu sót; đạt mới được dựng sườn thép và lợp mái.", "Thấm cục bộ thì ghi nhận vị trí, xử lý lại đến khi hết thấm; chụp ảnh từng lớp."], ["Biên bản ngâm nước có chữ ký chủ nhà trước khi dựng sườn thép mái."]],
-        ["Ốp lát gạch", "Ốp lát", "Quy trình ốp lát gạch (30/4/2025)", ["Sàn vệ sinh, ban công, bồn hoa trệt: chống thấm nhiều lớp, lật cao chân tường tối thiểu 30 cm, ngâm nước thử 24–48 giờ, đạt mới cán nền.", "Dọn sạch tường, sàn; dùng máy laser, thủy bình đánh mốc; gạch ngâm nước 15–30 phút trước khi thi công.", "Chọn lát nguội (chờ nền khô, bám chắc) hoặc lát sống (cần thợ tay nghề cao).", "Dán gạch tường: trét keo đều lên mặt gạch, lát viên định vị từ dưới lên, dán cùng chiều gân mặt sau, dùng kích đỡ, nêm, ke để ron đều khoảng 2 mm, gõ búa cao su.", "Lát nền: tưới ẩm, cán hồ theo cốt nền và độ dốc, tưới hồ dầu trước khi lát; keo chà ron sau 1 ngày (Cá Sấu, Sika, Saveto, Weber).", "Độ dốc sàn 1–2% thoát nước tốt; nền vệ sinh, ban công lát âm 3–5 cm; thềm ba, sảnh lát âm dương; cắt xéo 45° ở góc cạnh; vị trí phễu thu cắt gạch theo đường xéo.", "Dùng bạt che bảo quản nền gạch; đầu ren trong bằng mặt gạch ốp tường cho thiết bị."], ["Gõ không bộp, mạch phẳng không gờ cộm; xả nước thử không đọng vũng."]],
+        ["Chống thấm sàn mái, sân thượng, ban công", "Chống thấm", "Quy trình chống thấm 2025–2026 · TCVN 5718:1993", ["Làm sạch bề mặt, xử lý góc cạnh, cổ ống (thanh trương nở đã đặt khi đổ sàn), phễu thu.", "Chống thấm gốc xi măng polymer nhiều lớp, quét chéo nhau.", "Ngâm nước thử 24–48 giờ ở sàn mái, sân thượng, ban công, sê nô, sàn bồn nước, bồn hoa trên cao để phát hiện thiếu sót; đạt mới được dựng sườn thép và lợp mái.", "Thấm cục bộ thì ghi nhận vị trí, xử lý lại đến khi hết thấm; chụp ảnh từng lớp."], ["Biên bản ngâm nước có chữ ký chủ nhà trước khi dựng sườn thép mái."]],
+        ["Ốp lát gạch", "Ốp lát", "Quy trình ốp lát gạch (30/4/2025)", ["Sàn vệ sinh, ban công, bồn hoa trệt: chống thấm nhiều lớp, ngâm nước thử 24–48 giờ, đạt mới cán nền.", "Dọn sạch tường, sàn; dùng máy laser, thủy bình đánh mốc; gạch ngâm nước 15–30 phút trước khi thi công.", "Chọn lát nguội (chờ nền khô, bám chắc) hoặc lát sống (cần thợ tay nghề cao).", "Dán gạch tường: trét keo đều lên mặt gạch, lát viên định vị từ dưới lên, dán cùng chiều gân mặt sau, dùng kích đỡ, nêm, ke để ron đều khoảng 2 mm, gõ búa cao su.", "Lát nền: tưới ẩm, cán hồ theo cốt nền và độ dốc, tưới hồ dầu trước khi lát; keo chà ron sau 1 ngày (Cá Sấu, Sika, Saveto, Weber).", "Độ dốc sàn 1–2% thoát nước tốt; nền vệ sinh, ban công lát âm 3–5 cm; thềm ba, sảnh lát âm dương; cắt xéo 45° ở góc cạnh; vị trí phễu thu cắt gạch theo đường xéo.", "Dùng bạt che bảo quản nền gạch; đầu ren trong bằng mặt gạch ốp tường cho thiết bị."], ["Gõ không bộp, mạch phẳng không gờ cộm; xả nước thử không đọng vũng."]],
         ["Bả matit và sơn", "Bả & sơn", "Quy trình bả matit (18/11/2025)", ["Kỹ sư kiểm tra tường: tường trát ít nhất 7 ngày, độ ẩm 22–28%; tường chưa bảo đảm thì không bả; tường quá khô phải tạo ẩm.", "Bột bả trong và ngoài đúng hợp đồng, không dùng bột nội thất cho bên ngoài; giấy nhám hạt 120, 150, 180.", "Che bạt nền đã lát; vệ sinh bề mặt; trộn bột vào nước sạch (không làm ngược) bằng cần trộn điện, chỉ dùng bột đã trộn trong khoảng 2 giờ.", "Lớp bả 1 dày khoảng 1 mm; lớp 2 sau 12–24 giờ, dày khoảng 1 mm; tổng lớp bả không quá 3 mm.", "Xả nhám, dùng đèn rọi kiểm tra độ phẳng, vệ sinh bụi bằng chổi cỏ hoặc máy nén; sau đó sơn lót và sơn phủ."], ["Rọi đèn: phẳng mịn, không lồi lõm, không lộ vữa trát; góc cạnh vuông thẳng; đế âm tường trét kín."]],
         ["Lắp cửa, thiết bị, lan can, cổng và hàng rào", "Cửa & thiết bị", "TCVN 9206:2012", ["Lắp khung cửa, cửa đi, cửa sổ (khung đen) đúng cao độ, bắn silicon quanh khung.", "Lắp lan can ban công (sắt nghệ thuật), cố định chắc chắn theo hồ sơ thiết kế.", "Lắp thiết bị vệ sinh vào đầu ren chờ sẵn, thử xả nước; mở ô cửa thăm hộp kỹ thuật.", "Lắp đèn, công tắc, ổ cắm, thử từng mạch.", "Lắp cổng và hoàn thiện hàng rào; lát sân, lối đi, trồng cỏ cây và lắp đèn ngoại thất."], ["Đóng mở thử cửa và cổng; thử nước, thử điện; kiểm tra hàng rào chắc chắn."]],
         ["Nghiệm thu và bàn giao", "Hoàn thiện, nghiệm thu & bàn giao", "TCVN 4055:2012 · Nghị định 06/2021/NĐ-CP", ["Vệ sinh công nghiệp toàn nhà: lau kính, cửa, thiết bị, hút bụi sàn, chà keo ron nền lần cuối; thu dọn vật tư, tháo rào che chắn tạm và giàn giáo.", "Chạy thử toàn bộ hệ thống: điện từng mạch, CB chống giật, cấp thoát nước, bồn nước mái, bình nóng lạnh; đóng mở thử cửa, khóa và cổng.", "Kiểm tra lại bề mặt sơn, ốp lát, trần, chống thấm; xử lý toàn bộ hạng mục tồn đọng trước ngày bàn giao.", "Cùng chủ nhà kiểm tra từng phòng, từng hạng mục theo hợp đồng và bản vẽ; hướng dẫn sử dụng thiết bị, tủ điện, van nước, hộp kỹ thuật và cách bảo quản vật liệu.", "Bàn giao chìa khóa, hồ sơ hoàn công, bản vẽ hoàn công, biên bản nghiệm thu, nhật ký thi công và phiếu bảo hành; thống nhất lịch kiểm tra sau bàn giao."], ["Danh mục tồn đọng được xử lý 100%; biên bản nghiệm thu và bàn giao có chữ ký hai bên."]]
     ];
     [S[1], S[2]] = [S[2], S[1]]; S.splice(22, 0, S.splice(19, 1)[0]);
     const NEWSEG = [
-        ["Bê tông lót đáy hố móng", "BT lót hố", "TCVN 9361:2012 · TCVN 4453:1995", ["Cọc giữ nguyên vị trí đã ép; đập bỏ phần đầu cọc dư đến cao độ thiết kế (đầu cọc hạ dần xuống sát đáy hố rồi nằm trong lớp bê tông lót), để lộ thép neo, vệ sinh sạch.", "Nghiệm thu đáy hố: sạch, khô, đúng cao độ; có nước đọng thì bơm hút.", "Đổ lớp bê tông lót đá 4×6 mác 100 dày khoảng 100 mm xuống đáy từng hố móng, rộng hơn móng mỗi bên 5–10 cm.", "Gạt phẳng theo cao độ, chờ bê tông đủ cứng mới đặt thép.", "Vạch tim móng và tim cột lên mặt bê tông lót bằng máy."], ["Kiểm tra cao độ và độ phẳng mặt bê tông lót."]],
+        ["Bê tông lót đáy hố móng", "BT lót hố", "TCVN 9361:2012 · TCVN 4453:1995", ["Cắt và đục phần bê tông đầu cọc đến cao độ thiết kế, để đầu cọc nhô cao hơn mặt bê tông lót đài móng 100–150 mm; không đục sát lớp bê tông lót. Làm sạch đầu cọc, để lộ thép neo theo chi tiết thiết kế.", "Nghiệm thu đáy hố: sạch, khô, đúng cao độ; có nước đọng thì bơm hút.", "Đổ lớp bê tông lót đá 4×6 mác 100 dày khoảng 100 mm xuống đáy từng hố móng, rộng hơn móng mỗi bên 5–10 cm.", "Gạt phẳng theo cao độ, chờ bê tông đủ cứng mới đặt thép.", "Vạch tim móng và tim cột lên mặt bê tông lót bằng máy."], ["Kiểm tra cao độ và độ phẳng mặt bê tông lót."]],
         ["Đào rãnh giằng móng và đổ bê tông lót", "Đào rãnh + lót giằng", "TCVN 9361:2012", ["Vạch tim giằng móng từ tim các cột, đào rãnh nối các móng đến cao độ thiết kế; vệ sinh đáy rãnh.", "Đổ bê tông lót đá 4×6 mác 100 dày khoảng 100 mm đáy rãnh nối liền các móng.", "Gạt phẳng, chờ đủ cứng mới dựng cốp pha giằng móng."], ["Kiểm tra tim, cao độ đáy rãnh giằng móng so với móng."]],
         ["Gia công, lắp dựng cốt thép móng và thép chờ cột", "Cốt thép móng", BT + " · TCVN 1651-2:2018", ["Thép đúng chủng loại trong hợp đồng, có chứng chỉ, ký hiệu rõ trên thanh thép; không gỉ sét, giảm tiết diện không quá 2%.", "Cắt, uốn cơ học theo bản vẽ, sai lệch theo TCVN 5593:2012 (±5 mm mỗi mét, ±20 mm toàn chiều dài, góc uốn ±3°).", "Móng chưa đổ, lưới thép móng đặt trên lớp bê tông lót bằng con kê bê tông đúc sẵn, không dùng gạch vỡ; buộc chắc các điểm giao.", "Dựng thép chờ cột (đoạn thấp, chỉ nhô cao khỏi mặt đất khoảng 1 m) cùng thép đai; phần thép cột lên trên sẽ nối sau ở bước cột tầng trệt.", "Móng nằm ở rìa công trình thì thép chờ cột đặt lệch hẳn về phía mép ngoài: móng góc lệch cả hai phương, móng biên lệch một phương; chỉ 2 móng ở giữa mới đặt thép cột ở tâm. Chân thép bẻ L hướng vào trong móng.", "Giằng chống thép cột để đứng thẳng, đúng tim; con kê giữ lớp bảo vệ theo TCVN 5574:2018."], ["Kỹ sư giám sát lập biên bản nghiệm thu cốt thép trước khi đóng cốp pha."]],
         ["Lắp cốp pha móng", "Cốp pha móng", "Quy trình nghiệm thu móng · Quy trình nghiệm thu ván khuôn", ["Dựng cốp pha bao quanh từng móng đúng kích thước, kín khít, không mục, cong vênh.", "Gia cố bằng cọc, cùm (gông), cây chống để không xô lệch khi đổ; mối nối không xếp chồng ván, đóng nẹp.", "Chỗ giáp nhà liền kề đóng bạt hoặc nylon ngăn cách.", "Kiểm tra khoảng cách thép với cốp pha bảo đảm lớp bê tông bảo vệ; tưới ẩm ván trước khi đổ."], ["Nghiệm thu cốp pha theo 7 bước trước khi đổ."]],
         ["Đổ bê tông móng", "Đổ BT móng", BT + " · TCVN 8828:2011", ["Chỉ đổ bê tông vào các hố móng tới cao độ móng.", "Bê tông tươi: kiểm tra phiếu xuất xưởng, đo độ sụt 12±2 hoặc 14±2, thu tổ mẫu lưu, tuyệt đối không tự ý thêm nước. Bê tông trộn tại chỗ: kiểm tra cát, đá, xi măng, nước và tỷ lệ, mác 250.", "Đổ từng lớp, đầm dùi cắm thẳng đứng, bước đầm đều, không đầm chạm thép, đến khi hết bọt khí và nổi nước xi măng.", "Che phủ, tưới ẩm bảo dưỡng liên tục."], ["Biên bản đổ bê tông, mẫu nén có kết quả, ảnh từng móng."]],
         ["Lắp cốp pha giằng móng", "Cốp pha giằng", "Quy trình nghiệm thu ván khuôn · Quy trình nghiệm thu móng", ["Đặt cốp pha hai bên dọc theo tim giằng móng, nối giữa các hố, lên đến cao độ thiết kế.", "Cốp pha có thể là ván hoặc xây gạch; gạch xây thẳng hàng, chắc, xây kín để không mất nước bê tông.", "Chống đỡ bằng cọc, cùm, cây chống; mối nối kín khít.", "Kiểm tra tim trục, cao độ bằng máy; tưới ẩm trước khi đổ."], ["Nghiệm thu cốp pha theo 7 bước: bản vẽ, vật liệu, kích thước, tim trục cao độ, gông cây chống, kín khít, vệ sinh."]],
         ["Lắp thép giằng móng, buộc vào thép chờ cột", "Thép giằng móng", BT + " · TCVN 1651-2:2018", ["Lắp thép dọc và thép đai giằng móng trong lòng cốp pha, buộc liên kết với thép chờ cột đã dựng ở bước thép móng.", "Nối thép so le, không nối quá 50% diện tích thép tại một mặt cắt, chiều dài nối tối thiểu 30D.", "Dùng cục kê bê tông đúc sẵn, không dùng gạch vỡ; đai dày hơn ở nút giao giằng móng và cột.", "Kiểm tra lại thép chờ cột còn thẳng đứng, đúng tim sau khi lắp thép giằng móng."], ["Lập biên bản nghiệm thu cốt thép giằng móng trước khi đổ."]],
-        ["Đổ bê tông giằng móng và cổ cột", "Đổ BT giằng móng", BT + " · TCVN 8828:2011", ["Đổ bê tông mác 250 vào cốp pha giằng móng, nối liền các móng, lên đến cao độ thiết kế.", "Đầm dùi kỹ, nhất là các nút giao với cột; không đầm chạm thép và cốp pha.", "Mạch ngừng (nếu có) làm nhám, quét nước xi măng trước khi đổ tiếp.", "Bảo dưỡng ẩm, thu tổ mẫu lưu."], ["Mẫu nén, kiểm tra cao độ mặt giằng móng."]],
-        ["Tháo cốp pha giằng móng, lấp đất rãnh và đổ cát lấp nền", "Lấp rãnh, cát nền", "TCVN 9361:2012 · Quy trình xử lý bề mặt nền bê tông (21/4/2025)", ["Tháo cốp pha giằng móng khi bê tông đủ cường độ, không sứt cạnh; vá chỗ rỗ, nứt bằng vữa không co ngót.", "Lấp đất rãnh giằng móng, đầm chặt từng lớp 20–30 cm hai bên giằng.", "Đổ cát san lấp lòng nền bằng cao độ mặt bê tông giằng móng, đầm chặt từng lớp 15–20 cm, tưới ẩm khi đầm; phun thuốc phòng mối.", "Nền bê tông sau này nếu hư hỏng: khảo sát, mài bỏ vữa bong, quét Sika Latex TH (1 lít + 1 lít nước + 1 kg xi măng) hoặc Sikadur 732 (A:B = 2:1), rồi cán bê tông đá mi, cắt khe co giãn."], ["Kiểm tra cao độ nền bằng máy, độ chặt từng lớp."]],
+        ["Đổ bê tông giằng móng và cổ cột", "Đổ BT giằng móng", BT + " · TCVN 8828:2011", ["Đổ bê tông mác 250 vào cốp pha giằng móng, nối liền các móng, lên đến cao độ thiết kế.", "Đầm dùi kỹ, nhất là các nút giao với cột; không đầm chạm thép và cốp pha.", "Mạch ngừng (nếu có): làm nhám, vệ sinh sạch và xử lý bằng chất kết nối bê tông cũ–mới Sika theo hướng dẫn của nhà sản xuất trước khi đổ tiếp.", "Bảo dưỡng ẩm, thu tổ mẫu lưu."], ["Mẫu nén, kiểm tra cao độ mặt giằng móng."]],
+        ["Xây tường móng, lấp đất rãnh và đầm cát nền", "Lấp rãnh, cát nền", "TCVN 9361:2012 · TCVN 4085:2011", ["Sau khi bê tông giằng móng đạt điều kiện thi công và tháo cốp pha theo hồ sơ kỹ thuật, tháo ván khuôn, tránh làm sứt cạnh.", "Xây tường móng bằng gạch đặc hoặc gạch thẻ già lửa (còn gọi là gạch DALU) trên giằng móng đến cao độ thiết kế; kích thước, liên kết và mạch vữa theo bản vẽ, nghiệm thu trước khi lấp đất.", "Lấp đất hai bên giằng cân đối, đầm chặt từng lớp dày 300 mm; không làm xê dịch kết cấu hoặc các tuyến ống đã lắp.", "San cát lòng nền theo cao độ thiết kế, đầm chặt từng lớp dày 300 mm và điều chỉnh độ ẩm phù hợp; thực hiện phòng mối theo hồ sơ công trình."], ["Nghiệm thu tường móng đúng vật liệu, tim tuyến và cao độ thiết kế; kiểm tra cao độ nền và độ chặt từng lớp đắp."]],
         ["Nối thép và lắp cốp pha cột tầng trệt", "Thép + cốp pha cột", "Quy trình nghiệm thu ván khuôn · Quy trình cột dầm sàn", ["Nối thép cột vào thép chờ từ giằng móng, lên tới cao độ sàn lầu 1; nối so le, chiều dài nối tối thiểu 30D, uốn cổ chai tại đoạn nối, gia cố đai a100 hoặc a150.", "Dùng cục kê treo giữ lớp bảo vệ, bọc nylon chân cột.", "Dựng cốp pha cột, gông chắc, chống xiên hai phương; chân cây chống đặt trên nền ổn định.", "Kiểm tra tim cột, cao độ bằng máy; vệ sinh chân cột, chừa cửa vệ sinh ở đáy cốp pha; tưới ẩm cốp pha ngay trước khi đổ."], ["Biên bản nghiệm thu thép và cốp pha cột; kiểm tra lại tim sau khi cố định cây chống."]],
         ["Đổ bê tông cột tầng trệt (đầm dùi)", "Đổ BT cột trệt", BT + " · TCVN 8828:2011", ["Vệ sinh chân cột, xử lý kết nối bê tông cũ và mới bằng hồ dầu.", "Đổ từng đoạn cao tối đa 1,5 m, dùng phễu hoặc ống dẫn, tuyệt đối không đổ từ trên cao xuống (phân tầng, rỗ chân cột).", "Đầm dùi cắm thẳng đứng, đầm đều đến khi hết bọt khí; có thể gõ búa cao su thành cốp pha.", "Bê tông M250 R28 (cần thì dùng R14 và phụ gia chống thấm B8), độ sụt 12±2 hoặc 14±2; không tự ý thêm nước.", "Kiểm tra lệch tim sau khi đổ; bảo dưỡng ẩm; tháo cốp pha cột sau 1–2 ngày."], ["Lấy mẫu nén; kiểm tra độ thẳng đứng và bề mặt cột không rỗ."]]
     ];
@@ -50,17 +197,17 @@ window.createConstructionSimulation = (root) => {
     {
         const f = n => S.find(x => x[1] == n); const o = {};["Điện nước âm", "Tô trát", "Chống thấm", "Lợp ngói", "Ốp lát"].forEach(n => o[n] = f(n));
         const CM = ["Thi công cột bê tông cốt thép mái và lắp dựng kèo, xà gồ, hệ sườn thép mái", "Cột mái + sườn thép mái", BT + " · TCVN 8828:2011 · TCVN 5575:2012", ["Dọi tim trục từ tầng dưới lên sàn mái; thép chờ cột chừa sẵn khi đổ sàn mái, nối so le, chiều dài nối tối thiểu 30D.", "Lắp thép cột và thép đai gia cố, kê đúng lớp bảo vệ; dựng ván khuôn, gông chắc và chống xiên hai phương.", "Đổ bê tông từng đoạn tối đa 1,5 m, đầm dùi kỹ, xử lý mạch ngừng chân cột bằng hồ dầu.", "Chờ bê tông đạt cường độ yêu cầu rồi tháo ván khuôn, kiểm tra bề mặt và độ thẳng đứng.", "Chia cột mái thành 5 hàng từ trái sang phải: thấp, cao, thấp, cao, thấp; hai hàng cao tạo đỉnh cho hai phần mái. Chừa bản mã hoặc bu lông chờ để liên kết sườn thép mái.", "Gia công kèo, xà gồ thép mạ kẽm theo bản vẽ; sơn chống gỉ các mối cắt, mối hàn.", "Dựng kèo thép lên đỉnh cột bê tông, liên kết bản mã bằng bu lông hoặc hàn đúng quy cách; kiểm tra thẳng đứng và khoảng cách giữa các vì kèo.", "Lắp xà gồ đúng bước, đúng độ dốc mái, bắt chặt vào kèo; lắp giằng chéo ổn định khung.", "Lắp hệ litô theo bước ngói để chuẩn bị ốp ngói."], ["Kiểm tra tim, độ thẳng đứng và cao độ đỉnh cột; mẫu nén, bản mã, độ võng, độ dốc, mối liên kết và lớp sơn chống gỉ trước khi lợp."]];
-        const UG = ["Lắp đường ống âm dưới nền", "Ống âm nền", "TCVN 4519:1988 · TCVN 9206:2012", ["Sau khi đầm cát nền, định vị và lắp các tuyến ống cấp thoát nước, ống luồn dây điện âm dưới nền theo bản vẽ.", "Tạo độ dốc thoát nước liên tục, cố định ống để không xê dịch khi lấp bảo vệ và đổ bê tông.", "Bịt đầu chờ, thử kín/áp lực các tuyến ống; chụp ảnh, ghi nhận vị trí trước khi che khuất."], ["Nghiệm thu cao độ, độ dốc, mối nối và kết quả thử kín trước khi thi công đà sàn nền."]];
-        const DN = ["Làm đà sàn nền: cốp pha biên và thép lưới nền", "Đà sàn nền", "TCVN 9361:2012", ["Sau khi lắp và nghiệm thu đường ống âm dưới nền, bảo vệ các tuyến ống rồi trải nylon cách ẩm lên mặt cát.", "Dựng cốp pha biên và làm các đà sàn nền (dải chia ô) theo bản vẽ, đúng cao độ thiết kế.", "Đặt lưới thép sàn nền theo bản vẽ trên con kê, buộc chắc các điểm giao; chừa thép chờ cho cột và tường.", "Kiểm tra cao độ, độ phẳng bằng máy laser trước khi đổ."], ["Biên bản nghiệm thu lớp cát đầm, đường ống âm, cao độ nền và thép lưới trước khi đổ bê tông."]];
-        const DB = ["Đổ bê tông sàn nền (nền trệt)", "Đổ BT nền", BT + " · TCVN 9361:2012", ["Đổ bê tông nền theo từng ô đà, phủ kín các đoạn giằng móng bên dưới, đầm đúng độ dày, cán phẳng đúng cao độ.", "Chừa khe thi công, khe co giãn theo bản vẽ.", "Bảo dưỡng bằng tưới nước hoặc phủ bạt tối thiểu 7 ngày.", "Bê tông nền đủ cứng mới lên thép và cốp pha cột; tháo cốp pha biên khi bê tông đủ cường độ."], ["Kiểm tra cao độ, độ phẳng, lấy mẫu nén; bảo dưỡng đủ ngày."]];
-        const LD = ["Tháo cốp pha móng và lấp đất hố móng bằng mặt đất tự nhiên", "Lấp đất hố móng", "TCVN 9361:2012", ["Tháo cốp pha móng khi bê tông đủ cường độ, không sứt cạnh; vá chỗ rỗ, nứt bằng vữa không co ngót.", "Lấp đất từng lớp 20–30 cm, đầm chặt đều hai bên móng, lấp đến bằng mặt đất tự nhiên.", "Giữ thép chờ cột sạch, thẳng, che tránh gỉ; không để đất vùi thép chờ.", "Mặt bằng đã bằng phẳng mới vạch tim giằng móng để đào rãnh nối các móng."], ["Kiểm tra độ chặt đất lấp, vị trí thép chờ cột đúng tim."]];
+        const UG = ["Lắp đường ống âm dưới nền", "Ống âm nền", "TCVN 4519:1988 · TCVN 9206:2012", ["Sau khi đầm cát nền theo từng lớp dày 300 mm, định vị và lắp các tuyến ống cấp thoát nước, ống luồn dây điện âm dưới nền theo bản vẽ.", "Tạo độ dốc thoát nước liên tục, cố định ống để không xê dịch khi lấp bảo vệ và đổ bê tông.", "Bịt đầu chờ, thử kín/áp lực các tuyến ống; chụp ảnh, ghi nhận vị trí trước khi che khuất."], ["Nghiệm thu cao độ, độ dốc, mối nối và kết quả thử kín trước khi thi công đà sàn nền."]];
+        const DN = ["Làm đà sàn nền: cốp pha biên và thép lưới nền", "Đà sàn nền", "TCVN 9361:2012", ["Chỉ thi công sàn bê tông nền trệt nếu hạng mục này có trong hồ sơ thiết kế hoặc hợp đồng.", "Trình tự nền thông thường: đầm chặt cát từng lớp dày 300 mm, nghiệm thu độ chặt, sau đó đổ bê tông lót nền đá 4×6 M100 theo cao độ và chiều dày hồ sơ thiết kế.", "Sau khi lắp và nghiệm thu đường ống âm dưới nền, bảo vệ các tuyến ống rồi trải nylon cách ẩm theo cấu tạo được duyệt.", "Dựng cốp pha biên, làm các đà sàn nền và đặt lưới thép trên con kê theo bản vẽ; chừa thép chờ cho cột và tường nếu có.", "Kiểm tra cao độ, độ phẳng bằng máy laser trước khi đổ."], ["Biên bản nghiệm thu lớp cát đầm, bê tông lót M100, đường ống âm, cao độ nền và thép lưới trước khi đổ bê tông."]];
+        const DB = ["Đổ bê tông sàn nền (nền trệt)", "Đổ BT nền", BT + " · TCVN 9361:2012", ["Chỉ đổ bê tông sàn nền trệt nếu có trong hồ sơ thiết kế hoặc hợp đồng; lớp lót đá 4×6 M100 không thay thế sàn kết cấu nếu bản vẽ yêu cầu.", "Đổ bê tông theo từng ô đà, phủ kín các đoạn giằng móng bên dưới, đầm đúng độ dày và cán phẳng theo cao độ thiết kế.", "Chừa khe thi công, khe co giãn theo bản vẽ.", "Bảo dưỡng bằng tưới nước hoặc phủ bạt tối thiểu 7 ngày; chỉ thi công cột khi nền đạt điều kiện chịu lực."], ["Kiểm tra cao độ, độ phẳng, lấy mẫu nén và bảo dưỡng theo hồ sơ. Nếu không có sàn nền trong thiết kế, bỏ qua hạng mục này."]];
+        const LD = ["Tháo cốp pha móng và lấp đất hố móng bằng mặt đất tự nhiên", "Lấp đất hố móng", "TCVN 9361:2012", ["Tháo cốp pha móng khi bê tông đủ cường độ, không sứt cạnh; vá chỗ rỗ, nứt bằng vữa không co ngót.", "Lấp đất từng lớp dày 300 mm, đầm chặt đều hai bên móng, lấp đến bằng mặt đất tự nhiên.", "Giữ thép chờ cột sạch, thẳng, che tránh gỉ; không để đất vùi thép chờ.", "Mặt bằng đã bằng phẳng mới vạch tim giằng móng để đào rãnh nối các móng."], ["Kiểm tra độ chặt đất lấp, vị trí thép chờ cột đúng tim."]];
         const lg = S.splice(S.findIndex(x => x[1] == "Đào rãnh + lót giằng"), 1)[0]; S.splice(S.findIndex(x => x[1] == "Đổ BT móng") + 1, 0, LD, lg);
         S.splice(S.findIndex(x => x[1] == "Lấp rãnh, cát nền") + 1, 0, UG, DN, DB);
         S.splice(S.indexOf(f("Đổ BT sàn mái")) + 1, 5, o["Chống thấm"], CM, o["Lợp ngói"], o["Điện nước âm"], o["Tô trát"], o["Ốp lát"])
     }
     const floorFrameSteps = [
-        ["Lắp dựng cốp pha và cốt thép dầm sàn tầng 1", "Cốp pha + thép dầm sàn L1", "Quy trình nghiệm thu ván khuôn · Quy trình cột dầm sàn · TCVN 1651-2:2018", ["Dựng giàn giáo, cây chống, ván khuôn đáy và thành dầm; lắp ván khuôn sàn thành từng tấm riêng trong các ô giữa dầm.", "Lắp cốp pha cho ban công, dầm hiên, sàn vệ sinh, hộp kỹ thuật và các gờ theo bản vẽ; bảo đảm đúng cao độ, độ dốc, tiết diện và kín khít.", "Lắp thép chủ, thép đai, thép gối và thép tăng cường dầm theo bản vẽ; buộc chắc tại các nút giao.", "Đặt lưới thép sàn hai phương, thép mũ và thép tăng cường tại gối; kê đúng lớp bê tông bảo vệ.", "Đặt, cố định ống chờ và các chi tiết xuyên sàn; kiểm tra tim trục, kích thước, gông, giằng, cây chống và nghiệm thu toàn bộ trước khi đổ."], ["Nghiệm thu từng tấm ván sàn nằm riêng trong đúng ô dầm; kiểm tra số lượng, đường kính, bước đai, chiều dài nối, lớp bảo vệ, ống chờ và các nút giao dầm sàn."]],
-        ["Đổ bê tông dầm và sàn tầng 1", "Đổ BT dầm sàn L1", BT + " · TCVN 8828:2011", ["Kiểm tra cấp phối, phiếu giao, độ sụt và lấy mẫu theo hồ sơ được duyệt; không tự ý thêm nước.", "Đổ, đầm bê tông dầm trước rồi đến sàn theo trình tự thiết kế; không làm xô lệch cốt thép hoặc chi tiết chờ.", "Cán phẳng, tạo dốc nơi cần thiết; xử lý mạch ngừng theo hồ sơ thiết kế, che phủ và bảo dưỡng bê tông. Chỉ tháo cốp pha, cây chống khi bê tông đạt cường độ và được chấp thuận."], ["Lưu phiếu giao bê tông, nhật ký và kết quả lấy mẫu; nghiệm thu cao độ, độ phẳng, độ võng và chất lượng bề mặt."]]
+        ["Lắp dựng cốp pha và cốt thép dầm sàn tầng 2 (lầu 1)", "Cốp pha + thép dầm sàn L1", "Quy trình nghiệm thu ván khuôn · Quy trình cột dầm sàn · TCVN 1651-2:2018", ["Dựng giàn giáo, cây chống, ván khuôn đáy và thành dầm; lắp ván khuôn sàn thành từng tấm riêng trong các ô giữa dầm.", "Lắp cốp pha cho ban công, dầm hiên, sàn vệ sinh, hộp kỹ thuật và các gờ theo bản vẽ; bảo đảm đúng cao độ, độ dốc, tiết diện và kín khít.", "Lắp thép chủ, thép đai, thép gối và thép tăng cường dầm theo bản vẽ; buộc chắc tại các nút giao.", "Đặt lưới thép sàn hai phương, thép mũ và thép tăng cường tại gối; kê đúng lớp bê tông bảo vệ.", "Đặt, cố định ống chờ và các chi tiết xuyên sàn; kiểm tra tim trục, kích thước, gông, giằng, cây chống và nghiệm thu toàn bộ trước khi đổ."], ["Nghiệm thu từng tấm ván sàn nằm riêng trong đúng ô dầm; kiểm tra số lượng, đường kính, bước đai, chiều dài nối, lớp bảo vệ, ống chờ và các nút giao dầm sàn."]],
+        ["Đổ bê tông dầm và sàn tầng 2 (lầu 1)", "Đổ BT dầm sàn L1", BT + " · TCVN 8828:2011", ["Kiểm tra cấp phối, phiếu giao, độ sụt và lấy mẫu theo hồ sơ được duyệt; không tự ý thêm nước.", "Đổ, đầm bê tông dầm trước rồi đến sàn theo trình tự thiết kế; không làm xô lệch cốt thép hoặc chi tiết chờ.", "Cán phẳng, tạo dốc nơi cần thiết; xử lý mạch ngừng theo hồ sơ thiết kế, che phủ và bảo dưỡng bê tông. Chỉ tháo cốp pha, cây chống khi bê tông đạt cường độ và được chấp thuận."], ["Lưu phiếu giao bê tông, nhật ký và kết quả lấy mẫu; nghiệm thu cao độ, độ phẳng, độ võng và chất lượng bề mặt."]]
     ];
     const floorFrameIndex = S.findIndex(step => step[1] == "Cốp pha sàn L1");
     if (floorFrameIndex < 0) throw new Error("Không tìm thấy các bước kết cấu sàn lầu 1.");
@@ -76,7 +223,7 @@ window.createConstructionSimulation = (root) => {
         ["Định vị", "Chuẩn bị mặt bằng, định vị tim trục công trình"],
         ["Ép cọc", "Thi công ép cọc"],
         ["Đào móng", "Đào hố móng, vệ sinh và nghiệm thu đáy hố"],
-        ["BT lót hố", "Xử lý đầu cọc và đổ bê tông lót đáy hố móng"],
+        ["BT lót hố", "Xử lý đầu cọc và đổ bê tông lót đáy đài móng"],
         ["Cốt thép móng", "Lắp dựng cốt thép đài móng và thép chờ cột"],
         ["Cốp pha móng", "Lắp dựng ván khuôn đài móng"],
         ["Đổ BT móng", "Đổ bê tông đài móng"],
@@ -85,22 +232,22 @@ window.createConstructionSimulation = (root) => {
         ["Cốp pha giằng", "Lắp dựng ván khuôn giằng móng"],
         ["Thép giằng móng", "Lắp dựng cốt thép giằng móng, liên kết thép chờ cột"],
         ["Đổ BT giằng móng", "Đổ bê tông giằng móng và cổ cột"],
-        ["Lấp rãnh, cát nền", "Tháo ván khuôn giằng móng, lấp đất và đầm cát nền"],
+        ["Lấp rãnh, cát nền", "Xây tường móng, lấp đất và đầm cát nền"],
         ["Ống âm nền", "Lắp đặt đường ống âm dưới nền"],
-        ["Đà sàn nền", "Thi công đà nền, ván khuôn biên và cốt thép sàn nền"],
-        ["Đổ BT nền", "Đổ bê tông sàn nền tầng trệt"],
+        ["Đà sàn nền", "Thi công đà nền và sàn nền trệt (nếu có)"],
+        ["Đổ BT nền", "Đổ bê tông sàn nền tầng trệt (nếu có)"],
         ["Thép + cốp pha cột", "Nối thép chờ, lắp dựng cốt thép và ván khuôn cột tầng trệt"],
         ["Đổ BT cột trệt", "Đổ bê tông cột tầng trệt"],
         ["Xây tường trệt", "Xây tường tầng trệt"],
-        ["Cốp pha + thép dầm sàn L1", "Lắp dựng cốp pha và cốt thép dầm, sàn tầng 1"],
-        ["Thép dầm sàn L1", "Lắp dựng cốt thép dầm và sàn tầng 1"],
-        ["Đổ BT dầm sàn L1", "Đổ bê tông dầm và sàn tầng 1"],
-        ["Cột lầu 1", "Thi công cột tầng 1: cốt thép, ván khuôn và đổ bê tông đầm, dùi"],
-        ["Xây tường L1", "Xây tường tầng 1"],
+        ["Cốp pha + thép dầm sàn L1", "Lắp dựng cốp pha và cốt thép dầm, sàn tầng 2 (lầu 1)"],
+        ["Thép dầm sàn L1", "Lắp dựng cốt thép dầm và sàn tầng 2 (lầu 1)"],
+        ["Đổ BT dầm sàn L1", "Đổ bê tông dầm và sàn tầng 2 (lầu 1)"],
+        ["Cột lầu 1", "Thi công cột tầng 2 (lầu 1): cốt thép, ván khuôn và đổ bê tông đầm, dùi"],
+        ["Xây tường L1", "Xây tường tầng 2 (lầu 1)"],
         ["Cốp pha + thép dầm sàn mái", "Lắp dựng cốp pha và cốt thép dầm, sàn mái"],
         ["Thép dầm sàn mái", "Lắp dựng cốt thép dầm và sàn mái"],
         ["Đổ BT dầm sàn mái", "Đổ bê tông dầm và sàn mái"],
-        ["Cột mái + sườn thép mái", "Thi công cột bê tông cốt thép mái và lắp dựng kèo, xà gồ, hệ sườn thép mái"],
+        ["Cột mái + sườn thép mái", "Thi công cột mái, lắp dựng kèo, xà gồ thép hộp"],
         ["Chống thấm", "Thi công chống thấm sàn mái, sân thượng và ban công"],
         ["Lợp ngói", "Lợp ngói, hoàn thiện khe tiếp giáp mái"],
         ["Điện nước âm", "Lắp đặt hệ thống điện, cấp thoát nước âm tường"],
@@ -120,21 +267,23 @@ window.createConstructionSimulation = (root) => {
     }
     const procedureUpdates = new Map([
         ["Lấp rãnh, cát nền", {
-            standards: "TCVN 9361:2012",
+            standards: "TCVN 9361:2012 · TCVN 4085:2011",
             method: [
-                "Chỉ tháo cốp pha thành giằng khi bê tông đạt điều kiện tháo theo hồ sơ kỹ thuật; tránh làm sứt cạnh và sửa khuyết tật theo chỉ dẫn giám sát.",
-                "Lấp đất hai bên giằng cân đối, đầm chặt từng lớp dày 20–30 cm; không làm xê dịch kết cấu hoặc các tuyến ống đã lắp.",
-                "San cát lòng nền theo cao độ thiết kế, đầm từng lớp dày 15–20 cm và điều chỉnh độ ẩm phù hợp; thực hiện phòng mối theo hồ sơ công trình."
+                "Sau khi bê tông giằng móng đạt điều kiện thi công và tháo cốp pha theo hồ sơ kỹ thuật, tháo ván khuôn, tránh làm sứt cạnh.",
+                "Xây tường móng bằng gạch đặc hoặc gạch thẻ già lửa (còn gọi là gạch DALU) trên giằng móng đến cao độ thiết kế; kích thước, liên kết và mạch vữa theo bản vẽ, nghiệm thu trước khi lấp đất.",
+                "Lấp đất hai bên giằng cân đối, đầm chặt từng lớp dày 300 mm; không làm xê dịch kết cấu hoặc các tuyến ống đã lắp.",
+                "San cát lòng nền theo cao độ thiết kế, đầm chặt từng lớp dày 300 mm và điều chỉnh độ ẩm phù hợp; thực hiện phòng mối theo hồ sơ công trình."
             ],
-            quality: ["Kiểm tra cao độ nền và độ chặt từng lớp đắp trước khi chuyển sang lắp đặt hệ thống âm nền."]
+            quality: ["Nghiệm thu tường móng đúng vật liệu, tim tuyến và cao độ thiết kế; kiểm tra cao độ nền và độ chặt từng lớp đắp trước khi chuyển sang lắp đặt hệ thống âm nền."]
         }],
         ["Đổ BT nền", {
             method: [
-                "Trước khi đổ, nghiệm thu lớp nền, cốp pha biên, cốt thép và các tuyến ống; đối chiếu phiếu giao/cấp phối, kiểm tra độ sụt và lấy mẫu theo hồ sơ được duyệt, không tự ý thêm nước.",
+                "Chỉ đổ bê tông sàn nền trệt nếu hạng mục này có trong hồ sơ thiết kế hoặc hợp đồng; không mặc định mọi công trình đều có sàn bê tông nền.",
+                "Trước khi đổ, nghiệm thu lớp bê tông lót, cốp pha biên, cốt thép và các tuyến ống; đối chiếu phiếu giao/cấp phối, kiểm tra độ sụt và lấy mẫu theo hồ sơ được duyệt, không tự ý thêm nước.",
                 "Đổ bê tông theo từng ô đà, phủ kín các đoạn giằng móng bên dưới; đầm phù hợp, không làm xê dịch cốt thép hoặc đường ống, cán phẳng đúng cao độ.",
                 "Tạo khe thi công, khe co giãn theo bản vẽ; che phủ và bảo dưỡng theo chỉ dẫn kỹ thuật. Chỉ thi công cột khi nền đạt điều kiện chịu lực."
             ],
-            quality: ["Ghi nhật ký và kết quả lấy mẫu; nghiệm thu cao độ, độ phẳng, khe và bảo dưỡng bê tông theo hồ sơ công trình."]
+            quality: ["Ghi nhật ký và kết quả lấy mẫu; nghiệm thu cao độ, độ phẳng, khe và bảo dưỡng bê tông theo hồ sơ công trình. Nếu không có sàn nền trong thiết kế, bỏ qua hạng mục này."]
         }],
     ]);
     for (const [key, update] of procedureUpdates) {
@@ -144,30 +293,14 @@ window.createConstructionSimulation = (root) => {
         if (update.method) step[3] = update.method;
         if (update.quality) step[4] = update.quality;
     }
-    const tieBeamStepKeys = ["Đào rãnh + lót giằng", "Cốp pha giằng", "Thép giằng móng", "Đổ BT giằng móng"];
-    const tieBeamStepStart = S.findIndex(step => step[1] === tieBeamStepKeys[0]);
-    if (tieBeamStepStart < 0 || tieBeamStepKeys.some((key, offset) => S[tieBeamStepStart + offset]?.[1] !== key)) {
-        throw new Error("Không tìm thấy đủ các bước thi công giằng móng theo đúng thứ tự.");
-    }
-    const tieBeamSteps = S.slice(tieBeamStepStart, tieBeamStepStart + tieBeamStepKeys.length);
-    const tieBeamDisplayStep = [
-        "Thi công giằng móng: đào rãnh, lắp cốp pha, lắp thép và đổ bê tông",
-        "Thi công giằng móng",
-        [...new Set(tieBeamSteps.flatMap(step => step[2].split(" · ")))].join(" · "),
-        tieBeamSteps.flatMap(step => step[3]),
-        tieBeamSteps.flatMap(step => step[4])
-    ];
-    const displaySteps = [
-        ...S.slice(0, tieBeamStepStart),
-        tieBeamDisplayStep,
-        ...S.slice(tieBeamStepStart + tieBeamStepKeys.length)
-    ];
-    const tieBeamDisplayIndex = tieBeamStepStart;
+    let displaySchedule = buildConstructionDisplaySchedule(S, foundationType);
+    let displaySteps = displaySchedule.displaySteps;
+    let tieBeamDisplayIndex = displaySchedule.tieBeamDisplayIndex;
     let tieBeamAnimationStage = null;
     function simulationStepForDisplayStep(displayIndex) {
-        if (displayIndex < tieBeamDisplayIndex) return displayIndex;
-        if (displayIndex === tieBeamDisplayIndex) return tieBeamStepStart + (tieBeamAnimationStage || 0);
-        return displayIndex + tieBeamStepKeys.length - 1;
+        const rawSteps = displaySchedule.simulationStepIndexes[displayIndex];
+        if (!rawSteps) throw new Error(`Không tìm thấy bước mô phỏng tương ứng: ${displayIndex}.`);
+        return rawSteps[displayIndex === tieBeamDisplayIndex ? (tieBeamAnimationStage || 0) : 0];
     }
     const floorFrameStart = floorFrameIndex, roofFrameStart = S.findIndex(step => step[1] == "Cốp pha + thép dầm sàn mái");
     const groundPipeStep = S.findIndex(step => step[1] == "Ống âm nền");
@@ -248,7 +381,11 @@ window.createConstructionSimulation = (root) => {
         return value.replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&apos;" })[character]);
     }
     function createStepSampleImage(step) {
-        if (STEP_REFERENCE_IMAGES[displaySteps[step][1]]) return STEP_REFERENCE_IMAGES[displaySteps[step][1]];
+        const key = displaySteps[step][1];
+        const referenceImagePath = selectedFoundationType !== "pile" && key === "BT lót hố"
+            ? null
+            : STEP_REFERENCE_IMAGES[key];
+        if (referenceImagePath) return referenceImagePath;
         const title = displaySteps[step][0];
         const lower = title.toLocaleLowerCase("vi");
         let illustration;
@@ -275,7 +412,11 @@ window.createConstructionSimulation = (root) => {
         return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
     }
     function setStepReferenceImage() {
-        reference.classList.toggle("has-full-frame-photo", !!STEP_REFERENCE_IMAGES[displaySteps[st][1]]);
+        const key = displaySteps[st][1];
+        const referenceImagePath = selectedFoundationType !== "pile" && key === "BT lót hố"
+            ? null
+            : STEP_REFERENCE_IMAGES[key];
+        reference.classList.toggle("has-full-frame-photo", !!referenceImagePath);
         referenceImage.src = createStepSampleImage(st);
         referenceImage.alt = `Ảnh minh họa mẫu bước ${st + 1}: ${displaySteps[st][0]}`;
         referenceToggle.disabled = false;
@@ -361,7 +502,7 @@ window.createConstructionSimulation = (root) => {
     });
     function ui() {
         const progress = Math.round((st + 1) / displaySteps.length * 100);
-        $("steps").innerHTML = `<button class="nb" type="button" data-d="-1" aria-label="Xem bước trước" ${st == 0 ? "disabled" : ""}>← <span>Trước</span></button><div class="cnt" aria-live="polite"><b>${st + 1}</b><span> / ${displaySteps.length}</span><small>${displaySteps[st][1]}</small></div><button class="nb nx" type="button" data-d="1" aria-label="Xem bước tiếp theo" ${st == displaySteps.length - 1 ? "disabled" : ""}><span>Sau</span> →</button><button class="nb" type="button" data-play aria-label="${playbackActive ? "Tạm dừng" : "Phát"} mô phỏng" aria-pressed="${playbackActive}">${playbackActive ? "❚❚ Tạm dừng" : "▶ Phát"}</button><div class="step-track" role="progressbar" aria-label="Tiến độ quy trình" aria-valuemin="1" aria-valuemax="${displaySteps.length}" aria-valuenow="${st + 1}"><span style="width:${progress}%"></span></div>`;
+        $("steps").innerHTML = `<button class="nb" type="button" data-d="-1" aria-label="Xem bước trước" ${st == 0 ? "disabled" : ""}>← <span>Trước</span></button><div class="cnt" aria-live="polite"><b>${st + 1}</b><span> / ${displaySteps.length}</span><small>${getConstructionStepLabel(displaySteps[st][1])}</small></div><button class="nb nx" type="button" data-d="1" aria-label="Xem bước tiếp theo" ${st == displaySteps.length - 1 ? "disabled" : ""}><span>Sau</span> →</button><button class="nb" type="button" data-play aria-label="${playbackActive ? "Tạm dừng" : "Phát"} mô phỏng" aria-pressed="${playbackActive}">${playbackActive ? "❚❚ Tạm dừng" : "▶ Phát"}</button><div class="step-track" role="progressbar" aria-label="Tiến độ quy trình" aria-valuemin="1" aria-valuemax="${displaySteps.length}" aria-valuenow="${st + 1}"><span style="width:${progress}%"></span></div>`;
         const a = displaySteps[st];
         $("panel").innerHTML = `<p class="prog">Bước ${st + 1}/${displaySteps.length}</p><h2>${a[0]}</h2><p class="std">${a[2]}</p><h3>Biện pháp thực hiện</h3><ul>${a[3].map(x => `<li>${x}</li>`).join("")}</ul><h3>Kiểm soát chất lượng</h3><ul class="qc">${a[4].map(x => `<li>${x}</li>`).join("")}</ul>`;
         show();
@@ -470,7 +611,11 @@ window.createConstructionSimulation = (root) => {
     fills(g.fill, soilM); fills(g.fillB, gmat);
     const tg = new THREE.EdgesGeometry(new THREE.BoxGeometry(.24, .01, .24));
     cx.forEach((x, i) => cz.forEach((z, j) => {
-        const [fx, fz] = fc(i, j), ox = fx - x, oz = fz - z; bx(g.pile, .3, 9.2, .3, fx, -4.2, fz, concM); bx(g.pileS, .3, 9.2, .3, fx, -4.2, fz, concM); bx(g.pileH, .3, .3, .3, fx, -.95, fz, concM);
+        const [fx, fz] = fc(i, j), ox = fx - x, oz = fz - z;
+        const pileBottom = -8.8, blindingTop = -.9, pileHeadProjection = .12, cutPileTop = blindingTop + pileHeadProjection;
+        bx(g.pile, .3, 9.2, .3, fx, -4.2, fz, concM);
+        bx(g.pileS, .3, cutPileTop - pileBottom, .3, fx, (cutPileTop + pileBottom) / 2, fz, concM);
+        bx(g.pileH, .3, .3, .3, fx, -.95, fz, concM);
         bx(g.lot, 1.5, .1, 1.5, fx, -.95, fz, lotM);
         for (let k = -3; k <= 3; k++) { cy(g.rebF, .014, 1.3, fx, -.78, fz + k * .2, steel, 0, PI / 2); cy(g.rebF, .014, 1.3, fx + k * .2, -.75, fz, steel, PI / 2) }
         [-.5, .5].forEach(a => [-.5, .5].forEach(b => bx(g.rebF, .1, .1, .1, fx + a, -.85, fz + b, M(0xcfcfcf))));
@@ -659,7 +804,7 @@ window.createConstructionSimulation = (root) => {
     for (let i = 0; i < 5; i++) { cy(g.SC, .03, 2 * FH + 1.2, -3.6 + i * 1.8, FH + .6, hd + 2.2, scaf); cy(g.SC, .03, 2 * FH + 1.2, -3.6 + i * 1.8, FH + .6, hd + 2.8, scaf) }
     [1.6, 3.4, 5.2, 6.8].forEach(y => { cy(g.SC, .03, 7.2, 0, y, hd + 2.2, scaf, 0, PI / 2); cy(g.SC, .03, 7.2, 0, y, hd + 2.8, scaf, 0, PI / 2); bx(g.SC, 7.2, .05, .6, 0, y + .03, hd + 2.5, M(0xc9a66b)) });
 
-    // cột mái, sườn thép, hoàn thiện bàn giao
+    // cột mái, hệ kèo, hoàn thiện bàn giao
     const roofColumnRows = [[-3.85, .5], [-1.5, 2.5], [.4, .9], [2.6, 2], [3.85, .9]];
     const roofColumnBase = 2 * FH + .07, roofColumnFormMaterial = M(0x9b4a2a, { transparent: true, opacity: .62, roughness: .8, side: THREE.DoubleSide });
     roofColumnRows.forEach(([x, height]) => cz.forEach(z => {
@@ -700,7 +845,7 @@ window.createConstructionSimulation = (root) => {
     for (let k = 0; k < 5; k++) { const u = k / 4; bx(g.done, .8, .03, .5, -1.3 * u, .06, sz - .6 - u * (sz - hd - 2.1), dst) }
     const rd = M(0xc0261f); bx(g.rib, 4.4, .14, .03, -1.3, 1.1, hd + 1.3, rd);[-1, 1].forEach(q => { const b = bx(g.rib, .4, .22, .04, -1.3 + q * .25, 1.1, hd + 1.34, rd); b.rotation.z = q * .5 }); bx(g.rib, .12, .12, .05, -1.3, 1.1, hd + 1.36, rd);
     // ===== hoạt ảnh 3D =====
-    const NOANIM = new Set(["site", "layout", "gnd0", "gnd1", "gnd2"]), POUR = new Set(["fillB", "ftg", "beamC", "bfill", "sand", "cols1", "cols2", "slab1", "slab2", "beamConcrete1", "beamConcrete2", "colM", "slabN"]), SPREAD = new Set(["lot", "lot2", "proof", "tile"]), DIG = new Set(["fill", "fill2"]), ASSEMBLE = new Set(["groundPipes", "beamRebar1", "beamRebar2", "rebS1", "slabRebar1", "slabRebar2"]), RISE = new Set(["colRb", "colR1", "colR2", "colF2"]), FAST_POUR = new Set(["beamConcrete1", "beamConcrete2", "slab1", "slab2"]), POUR_SPEED = 1.8, RB = { colRb: -.8, colR1: .6, colR2: FH + .07, colF2: FH + .07 }, DLY = { lot2: 2.6, colF1: 2.5, colF2: 2.5, cols2: 4.5, slab1: 1.1, slab2: 1.1 }, run = {};
+    const NOANIM = new Set(["site", "layout", "gnd0", "gnd1", "gnd2"]), POUR = new Set(["fillB", "ftg", "beamC", "bfill", "sand", "pileS", "cols1", "cols2", "slab1", "slab2", "beamConcrete1", "beamConcrete2", "colM", "slabN"]), SPREAD = new Set(["lot", "lot2", "proof", "tile"]), DIG = new Set(["fill", "fill2"]), ASSEMBLE = new Set(["groundPipes", "beamRebar1", "beamRebar2", "rebS1", "slabRebar1", "slabRebar2"]), RISE = new Set(["colRb", "colR1", "colR2", "colF2"]), FAST_POUR = new Set(["beamConcrete1", "beamConcrete2", "slab1", "slab2"]), POUR_SPEED = 1.8, RB = { colRb: -.8, colR1: .6, colR2: FH + .07, colF2: FH + .07 }, DLY = { lot2: 2.6, colF1: 2.5, colF2: 2.5, cols2: 4.5, slab1: 1.1, slab2: 1.1 }, run = {};
     N.forEach(n => g[n].children.forEach(m => { const u = m.userData; u.py = m.position.y; u.h = m.geometry && m.geometry.parameters && m.geometry.parameters.height || 0; u.sx = m.scale.x; u.sy = m.scale.y; u.sz = m.scale.z; u.px = m.position.x; u.pz = m.position.z }));
     function anim(n, t) {
         if (NOANIM.has(n)) return; if (RISE.has(n)) { const e = Math.min(1, Math.max(0, t / 2.8)); const s = Math.max(.001, e * e * (3 - 2 * e)); g[n].scale.y = s; g[n].position.y = (1 - s) * RB[n]; return }
@@ -711,7 +856,6 @@ window.createConstructionSimulation = (root) => {
             else if (POUR.has(n)) { m.scale.y = u.sy * q; m.position.y = u.py - u.h / 2 + u.h * q / 2 }
             else if (DIG.has(n)) { const z2 = Math.max(.001, 1 - p); m.scale.y = u.sy * z2; m.position.y = u.py - u.h / 2 + u.h * z2 / 2 }
             else if (n == "tamTile") { m.position.y = u.py + (1 - p) * 4; m.position.z = u.pz + (1 - p) * 2; m.visible = e > 0 }
-            else if (n == "pileS") { m.position.y = u.py - 1.35 * p }
             else if (n == "pile") { m.position.y = u.py + (1 - p) * 10.5; m.visible = e > 0 }
             else if (n == "formS1" || n == "formS2") { m.scale.set(u.sx * q, u.sy * q, u.sz * q); m.position.y = u.py + (1 - p) * .8 }
             else if (n == "mep") m.position.x = u.px - 8 * (1 - p);
@@ -742,7 +886,7 @@ window.createConstructionSimulation = (root) => {
         return true;
     }
     function isStepAnimationComplete() {
-        if (st === tieBeamDisplayIndex && tieBeamAnimationStage !== null && tieBeamAnimationStage < tieBeamStepKeys.length - 1) return false;
+        if (st === tieBeamDisplayIndex && tieBeamAnimationStage !== null && tieBeamAnimationStage < TIE_BEAM_STEP_KEYS.length - 1) return false;
         return hasCurrentAnimationFinished();
     }
     function camFor(i) { return i <= 11 ? { az: .8, el: .85, dist: 34, ty: 0 } : i <= 13 ? { az: .7, el: .5, dist: 40, ty: 2.5 } : i <= 21 ? { az: .6, el: .38, dist: 44, ty: 3.5 } : i <= 25 ? { az: .5, el: .3, dist: 46, ty: 4.6 } : i <= 27 ? { az: .5, el: .28, dist: 44, ty: 3.6 } : i >= 31 ? { az: .3, el: .2, dist: 36, ty: 3.2 } : { az: .22, el: .14, dist: 38, ty: 3.8 } }
@@ -822,8 +966,9 @@ window.createConstructionSimulation = (root) => {
             gnd2: raw >= groundTrenchStep,
             fillB: raw == footingBackfillStep, fill2: raw == groundFillStep,
             formN: raw == groundSlabFrameStep, rebN: raw == groundSlabFrameStep, slabN: raw >= groundSlabFrameStep + 1,
-            pileS: raw == 3, site: true, layout: raw == 0,
-            gnd0: raw < 2, gnd1: raw >= 2 && raw <= 7, fill: raw == 2, pile: raw >= 1 && raw <= 2,
+            pileS: selectedFoundationType === "pile" && raw == 3, site: true, layout: raw == 0,
+            gnd0: raw < 2, gnd1: raw >= 2 && raw <= 7, fill: raw == 2,
+            pile: selectedFoundationType === "pile" && raw >= 1 && raw <= 2,
             lot: raw >= 3, rebF: raw == 4 || raw == 5, colRb: raw >= 4 && raw <= groundFloorColumnPourStep,
             colR1: raw >= groundColumnStep && raw < upperColumnStep, colR2: false,
             formF: raw == 5 || raw == 6, ftg: raw >= 6, lot2: raw >= groundTrenchStep,
@@ -1041,7 +1186,7 @@ window.createConstructionSimulation = (root) => {
         updateSlabRebarOpacity("slabRebar1", floorRebarPourStart, floorSlabPourStep, "slab1", n);
         updateSlabRebarOpacity("slabRebar2", roofRebarPourStart, roofSlabPourStep, "slab2", n);
         wc = Math.min(wt, wc + dt * FH / 5); wp.constant = wc; wc2 = Math.min(wt2, wc2 + dt * FH / 3); wp2.constant = wc2; rc = Math.min(rt, rc + dt * .55); rp.constant = rc;
-        if (st === tieBeamDisplayIndex && tieBeamAnimationStage !== null && tieBeamAnimationStage < tieBeamStepKeys.length - 1 && hasCurrentAnimationFinished()) {
+        if (st === tieBeamDisplayIndex && tieBeamAnimationStage !== null && tieBeamAnimationStage < TIE_BEAM_STEP_KEYS.length - 1 && hasCurrentAnimationFinished()) {
             tieBeamAnimationStage++;
             show();
         }
@@ -1049,8 +1194,28 @@ window.createConstructionSimulation = (root) => {
         upd(); R.render(sc, cam); renderFrame = requestAnimationFrame(loop)
     }
     renderFrame = requestAnimationFrame(loop);
+    function setFoundation(nextFoundationType) {
+        if (nextFoundationType === selectedFoundationType) return;
+        const nextSchedule = buildConstructionDisplaySchedule(S, nextFoundationType);
+        stopPlayback(false);
+        Object.keys(run).forEach(name => { delete run[name] });
+        columnFormBuildStart = null;
+        columnFormReleaseStart = null;
+        balconySupportReleaseStart = null;
+        floorRebarPourStart = null;
+        roofRebarPourStart = null;
+        roofColumnBuildStart = null;
+        upperColumnBuildStart = null;
+        selectedFoundationType = nextFoundationType;
+        displaySchedule = nextSchedule;
+        displaySteps = nextSchedule.displaySteps;
+        tieBeamDisplayIndex = nextSchedule.tieBeamDisplayIndex;
+        tieBeamAnimationStage = null;
+        st = 0;
+        ui();
+    }
     function setActive(active) { if (active === renderActive) { if (active) rs(); return } renderActive = active; if (active) { last = performance.now(); lastFrame = 0; rs(); renderFrame = requestAnimationFrame(loop) } else cancelAnimationFrame(renderFrame) }
     rs(); ui();
     function setPackage(name, price) { const formatted = Number.isFinite(price) && price > 0 ? ` \u00b7 ${new Intl.NumberFormat("vi-VN").format(Math.round(price))} \u0111/m\u00b2` : ""; $("tag").textContent = `${name}${formatted}` }
-    return { setPackage, setActive };
+    return { setPackage, setFoundation, setActive };
 };

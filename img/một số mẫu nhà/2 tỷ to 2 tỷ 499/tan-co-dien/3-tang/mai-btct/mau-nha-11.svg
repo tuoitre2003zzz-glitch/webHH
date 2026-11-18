@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 540">
+  <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#c1dce0"/><stop offset="1" stop-color="#f5e4c9"/></linearGradient></defs>
+  <rect width="800" height="540" fill="url(#sky)"/><circle cx="144" cy="98" r="40" fill="#f0c578"/>
+  <path d="M0 356 155 262l148 95 179-131 175 128 143-75v133H0z" fill="#a0b39b"/><path d="M0 423q190-52 404 0t396-3v120H0z" fill="#70855e"/>
+  <path d="M259 93h300v368H259z" fill="#ddd6c8"/><path d="M239 111h340v21H239z" fill="#4f6661"/><path d="M281 148h256v10H281z" fill="#c3b497"/>
+  <rect x="289" y="172" width="240" height="63" fill="#82b2b6"/><path d="M409 172v63m-120-31h240" stroke="#f3ebdc" stroke-width="7"/>
+  <path d="M239 245h340v17H239z" fill="#536a64"/><rect x="285" y="276" width="104" height="68" fill="#82b2b6"/><path d="M337 276v68m-52-34h104" stroke="#f3ebdc" stroke-width="7"/>
+  <rect x="430" y="276" width="104" height="68" fill="#82b2b6"/><path d="M482 276v68m-52-34h104" stroke="#f3ebdc" stroke-width="7"/>
+  <path d="M239 353h340v16H239z"/><rect x="290" y="384" width="99" height="77" fill="#7da8a9"/><rect x="431" y="377" width="94" height="84" fill="#755a47"/>
+  <path d="M0 471h800v69H0z" fill="#71855e"/><circle cx="93" cy="443" r="31" fill="#4e7753"/><circle cx="697" cy="443" r="34" fill="#527a56"/>
+</svg>
